@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   #
   # Modify your shared folder here
   #
-  config.vm.synced_folder "www", "/var/www/"
+  config.vm.synced_folder ".", "/var/www/"
   config.vm.synced_folder "install/src", "/var/src/"
 
   config.vm.box = "bento/ubuntu-16.04"

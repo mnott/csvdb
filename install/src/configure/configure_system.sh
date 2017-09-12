@@ -9,3 +9,5 @@ sudo chown vagrant.vagrant /home/vagrant/.bashrc
 
 sudo cp ../bash.bashrc /etc
 
+sudo ln -s /var/www /vagrant
+
