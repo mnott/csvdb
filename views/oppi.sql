@@ -1,31 +1,28 @@
 #
-# Select for Country
+# Select for Oppi
 #
 # Parameters:
 #
 # OPPI
 # _WHERE_ (optional)
+# _ORDER_ (optional)
 #
 select
-  p.bp_org_name             as Customer,
-  p.opportunity_description as Opp_Desc,
-  p.opportunity_owner_name  as Client_Partner,
-  p.opportunity_owner_name  as Opp_Owner,
-  p.opp_phase               as Phase,
-  p.closing_date            as Close_Date,
-  p.fc_qualification        as Category,
-  p.country                 as MU,
-  p.opportunity_id          as Opp_Id,
-  p.acv_keur                as ACV
-from pipeline p
-join hcp on p.product = hcp.product
+  bp_org_name             as Customer,
+  opportunity_description as Opp_Desc,
+  opportunity_owner_name  as Client_Partner,
+  opportunity_owner_name  as Opp_Owner,
+  opp_phase               as Phase,
+  closing_date            as Close_Date,
+  fc_qualification        as Category,
+  country                 as MU,
+  opportunity_id          as Opp_Id,
+  rnd(acv_keur)           as acv
+from pipeline
+join hcp on product = hcp.product
 where
-      p.revenue_type   = 'New Software'
-  and p.opp_status     = 'In process'
-  and p.opportunity_id = 'OPPI'
+      revenue_type   = 'New Software'
+  and opp_status     = 'In process'
+  and opportunity_id = 'OPPI'
   _WHERE_
-
-order by
-  bp_org_name,
-  tcv_keur desc
-
+  _ORDER_

@@ -6,10 +6,10 @@
 # _WHERE_ (optional)
 #
 select distinct
-  p.country as Country
+  country as Country
 from pipeline p
-join hcp on p.product = hcp.product
+join hcp on product = hcp.product
   _WHERE_
-order by
-  country
+ORDER BY country asc
+#  _ORDER_
 

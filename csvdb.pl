@@ -1,4 +1,6 @@
-#!/usr/bin/env perl
+#!/bin/sh
+exec perl -x $0 "$@"
+#!/usr/bin/env perl -I lib
 ###################################################
 #
 # Treat a csv like a database
@@ -35,359 +37,90 @@ use warnings;
 
 binmode STDOUT, ":utf8";
 use utf8;
-use Data::Dump "pp";
-use Text::Table;
-use Text::CSV;
-use Tie::IxHash;
-use DBI;
-use File::BOM;
 use Getopt::Long;
+use Config::Simple;
 use Pod::Usage;
+use File::Basename qw(dirname);
+use Cwd qw(abs_path);
+use Data::Dump "pp";
+
+use CSVdb::TConfig;
+use CSVdb;
+
+$ENV{ROOT} = dirname( abs_path $0);
+
+###################################################
+#
+# About the documentation:
+#
+# Created like
+#
+# pod2markdown.pl <texdown.pl >README.md
+#
+# Using the excellent podmarkdown by Randy Stauner.
+#
+###################################################
+
+my $pod2md = "pod2markdown.pl";    # Must be in $PATH
 
 
 #
-# Hack to comply with mod_perl
+# Instantiate the Configuration holder
 #
-BEGIN {
-    ###################################################
-    #
-    # About the documentation:
-    #
-    # Created like
-    #
-    # pod2markdown.pl <texdown.pl >README.md
-    #
-    # Using the excellent podmarkdown by Randy Stauner.
-    #
-    ###################################################
-
-    my $pod2md = "pod2markdown.pl";    # Must be in $PATH
-
-    ###################################################
-    #
-    # Globals
-    #
-    ###################################################
-
-    my $dbh;     # The database connection
-    my $sth;     # The result set
-    my @cols;    # The columns from the result set
+my $cfg = CSVdb::TConfig->new;
 
 
-    ###################################################
-    #
-    # Parse the Command Line.
-    #
-    ###################################################
-
-    my %OPTS = (
-        debug  => 0,
-        dir    => 'data',
-        cols   => '',
-        kols   => '',
-        sql    => '',
-        view   => '',
-        params => {},
-        raw    => 0,
-        quote  => 0,
-        hdr    => 1,
-        help   => 0,
-        man    => 0,
-    );
+#
+# Instantiate the CSV handler
+#
+my $csvdb = CSVdb->new( cfg => $cfg );
 
 
-    GetOptions(
-        'debug|d'           => \$OPTS{debug},
-        'dir:s'             => \$OPTS{dir},
-        'cols|c:s'          => \$OPTS{cols},
-        'kols|k:s'          => \$OPTS{kols},
-        'hdr|h:s'           => \$OPTS{hdr},
-        'raw|r'             => \$OPTS{raw},
-        'sql|s:s'           => \$OPTS{sql},
-        'quote|q'           => \$OPTS{quote},
-        'view|v:s'          => \$OPTS{view},
-        'param|p:s%'        => \$OPTS{params},
-        'doc|documentation' => \$OPTS{doc},
-        'help'              => \$OPTS{help},
-        'man'               => \$OPTS{man},
-    ) or pod2usage(2);
-    pod2usage(1) if $OPTS{help};
+#
+# Get the command line options
+#
+GetOptions(
+    'n|no|nothing'      => sub { $cfg->append(@_); },
+    'debug|d'           => sub { $cfg->append(@_); },
+    'dir:s'             => sub { $cfg->append(@_); },
+    'cols|c:s'          => sub { $cfg->append(@_); },
+    'kols|k:s'          => sub { $cfg->append(@_); },
+    'hdr|h:s'           => sub { $cfg->append(@_); },
+    'raw|r'             => sub { $cfg->append(@_); },
+    'sql|s:s'           => sub { $cfg->append(@_); },
+    'quote|q'           => sub { $cfg->append(@_); },
+    'view|v:s'          => sub { $cfg->append(@_); },
+    'params|p:s{,}'     => sub { $cfg->append(@_); },
+    'doc|documentation' => sub { $cfg->append(@_); },
+    'help'              => sub { $cfg->append(@_); },
+    'man'               => sub { $cfg->append(@_); },
+) or pod2usage(2);
+pod2usage(1) if $cfg->contains_key("h");
 
-    pod2usage( -exitval => 0, -verbose => 2 ) if $OPTS{"man"};
+pod2usage( -exitval => 0, -verbose => 2 ) if $cfg->contains_key("man");
 
-    #
-    # Shortcut for myself to recreate the documentation
-    # without having to remember how it was done.
-    #
-    if ( $OPTS{doc} ) {
-        system("$pod2md < $0 >README.md");
-        exit 0;
-    }
-
-
-    ###################################################
-    #
-    # Run the Main Program
-    #
-    ###################################################
-
-    #
-    # Check whether we are to show the columns
-    #
-    if ( "" ne $OPTS{cols} || "" ne $OPTS{kols} ) {
-        tbl_columns();
-        exit 0;
-    }
-
-    #
-    # Optionally, load view
-    #
-    if ( "" ne $OPTS{view} ) {
-        view_select();
-        exit 0;
-    }
-
-    #
-    # Do a select
-    #
-    if ( "" ne $OPTS{sql} ) {
-        tbl_select( $OPTS{sql} );
-        exit 0;
-    }
+#
+# Shortcut for myself to recreate the documentation
+# without having to remember how it was done.
+#
+if ( $cfg->get("doc") ) {
+    system("$pod2md < $0 >README.md");
+    exit 0;
+}
 
 
-    ###################################################
-    #
-    # Connect to the "Database"
-    #
-    ###################################################
-
-    sub dbi_connect {
-        $dbh = DBI->connect(
-            "dbi:CSV:",
-            undef, undef,
-            {   f_ext        => ".csv/r",
-                f_encoding   => 'utf-8):via(File::BOM',    # a hack around BOM
-                f_dir        => $OPTS{dir},
-                csv_eol      => "\r\n",
-                csv_sep_char => ",",
-                RaiseError   => 1,
-                raw_header   => 1,
-            }
-        ) or die "Cannot connect: $DBI::errstr";
-    }
+#
+# Run
+#
+$csvdb->run();
+print $csvdb->result();
 
 
-    ###################################################
-    #
-    # Disconnect from the "Database"
-    #
-    ###################################################
+#
+# Done
+#
+#$log->trace("Done.");
 
-    sub dbi_disconnect {
-        $sth->finish;
-        $dbh->disconnect;
-    }
-
-
-    ###################################################
-    #
-    # Show the columns available in the table
-    #
-    ###################################################
-
-    sub tbl_columns {
-        dbi_connect();
-
-        my $table = $OPTS{kols};
-        if ( "" ne $OPTS{cols} ) {
-            $table = $OPTS{cols};
-        }
-
-        $sth = $dbh->prepare("select * from $table where 1=0");
-        $sth->execute();
-
-        my $res = $sth->{NAME};
-
-        # Decide whether to print columns
-        # alphabetically sorted or
-        # in original order
-        my @sres = ( "" ne $OPTS{cols} ? sort @$res : @$res );
-
-        for my $r (@sres) {
-            print $r . "\n";
-        }
-
-        dbi_disconnect();
-    }
-
-
-    ###################################################
-    #
-    # Run using a view
-    #
-    # A View is a file containing an sql statement
-    #
-    ###################################################
-
-    sub view_select {
-        my $sql = "";
-
-        my $file = $OPTS{view};
-        open( INFO, $file ) or die("Could not open  file.");
-
-        foreach my $line (<INFO>) {
-            next if $line =~ /^#/;
-            next if $line =~ /^$/;
-
-            $sql .= $line . " ";
-        }
-        close(INFO);
-
-        tbl_select($sql);
-    }
-
-
-    ###################################################
-    #
-    # Run using an sql query from the command line
-    #
-    # Also invoked when running from a view, after
-    # parsing that view's sql statement.
-    #
-    # Parameters:
-    #
-    #   The SQL statement
-    #
-    ###################################################
-
-    sub tbl_select {
-        my $sql = shift;
-
-        $sql = parse_sql($sql);
-
-        if ( $OPTS{debug} ) {
-            print STDERR "\n$sql\n\n";
-        }
-
-        dbi_connect();
-
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-
-        my @cols;           # The column names
-        my $tbl_results;    # The tabular result
-        my @arr_results;    # The array result for raw output
-
-        tie my (%hash_row), "Tie::IxHash";    # A tied hash for a row
-
-        #
-        # Iterate over the result set
-        #
-        while ( my $row = $sth->fetchrow_hashref() ) {
-            #
-            # If we did not yet read the column headers,
-            # we do so now.
-            #
-            if ( !@cols ) {
-                @cols = @{ $sth->{NAME} };
-                if ( $OPTS{raw} && $OPTS{hdr} ) {
-                    push @arr_results, [@cols];
-                }
-                else {
-                    $tbl_results = Text::Table->new(@cols);
-                }
-            }
-
-            #
-            # Read one row of the result set
-            #
-            if ( $OPTS{raw} ) {
-                my @arow;
-                foreach my $col (@cols) {
-                    push @arow, $row->{$col};
-                }
-                push @arr_results, [@arow];
-            }
-            else {
-                $tbl_results->add(
-                    map( { $hash_row{$_} = $row->{$_} } @cols ) );
-            }
-        }
-
-        #
-        # Print the table
-        #
-        if ( $OPTS{raw} ) {
-            my $csv = Text::CSV->new();
-
-            foreach my $row (@arr_results) {
-                my $csv = Text::CSV->new( { always_quote => $OPTS{quote}, } );
-                $csv->combine(@$row);
-                print $csv->string;
-                print "\n";
-            }
-        }
-        else {
-            if ( defined $tbl_results ) {
-                print $tbl_results;
-            }
-
-        }
-
-
-        #
-        # Disconnect
-        #
-        dbi_disconnect();
-    }
-
-
-    ###################################################
-    #
-    # Parse the SQL statemtn
-    #
-    # The params option can contain additional
-    # command line parameters to be used with
-    # the -p command line switch. These are key-value
-    # pairs that are parsed into the statement.
-    #
-    # Also, if there are optional parameters such as
-    # _WHERE_, they are either replaced by their
-    # equivalent command line parameter given by
-    # -p, or, if none is given, they are removed.
-    #
-    # Finally, the whole sql statement is returned
-    # concatenated into one line.
-    #
-    # Parameters:
-    #
-    #   The SQL statement
-    #
-    ###################################################
-
-    sub parse_sql {
-        my $sql = shift;
-
-        foreach my $key ( keys %{ $OPTS{params} } ) {
-            my $val = %{ $OPTS{params} }{$key};
-            $sql =~ s/$key/$val/g;
-        }
-
-        #
-        # Parse out optional parameters
-        # should they not have been given
-        # up to now
-        #
-        $sql =~ s/_WHERE_//g;
-
-        return $sql;
-    }
-
-}    # BEGIN
-
-
-exit 0;
 
 ###################################################
 #
@@ -523,7 +256,7 @@ directory.
 
 Run a query from a file. For example:
 
-  ./cvsdb.pl -v employees.sql
+  ./CSVdb.pl -v employees.sql
 
 This assumes there is an employees.sql (you can give a path to
 that file) which contains the actual query. This file is called

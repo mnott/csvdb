@@ -8,7 +8,6 @@
 select distinct
   product_desc,
   product
-from pipeline p
+from pipeline
 _WHERE_
-
 order by product_desc

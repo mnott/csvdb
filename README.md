@@ -134,7 +134,7 @@ Command line parameters can take any order on the command line.
 
     Run a query from a file. For example:
 
-        ./cvsdb.pl -v employees.sql
+        ./CSVdb.pl -v employees.sql
 
     This assumes there is an employees.sql (you can give a path to
     that file) which contains the actual query. This file is called

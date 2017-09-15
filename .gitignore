@@ -7,5 +7,8 @@ scratch
 # We don't want to share our data...
 data/*
 
+# Don't share the tmp directory for now
+tmp/
+
 # Don't share the vagrant metadirectory
 .vagrant
