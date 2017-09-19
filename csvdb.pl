@@ -92,10 +92,10 @@ GetOptions(
     'view|v:s'          => sub { $cfg->append(@_); },
     'params|p:s{,}'     => sub { $cfg->append(@_); },
     'doc|documentation' => sub { $cfg->append(@_); },
-    'help|?'            => sub { $cfg->append(@_); },
+    'help'              => sub { $cfg->append(@_); },
     'man'               => sub { $cfg->append(@_); },
 ) or pod2usage(2);
-pod2usage(2) if $cfg->contains_key("help");
+pod2usage(1) if $cfg->contains_key("h");
 
 pod2usage( -exitval => 0, -verbose => 2 ) if $cfg->contains_key("man");
 
@@ -141,13 +141,32 @@ __END__
 ./csvdb.pl [options]
 
 csvdb interprets all .csv files in the data directory as tables.
-So if, for example, you do this:
+
+You can specify the data directory on the command line like so:
+
+  ./csvdb.pl -d data/xyz/data/ -s "select id, name from employee"
+
+This tells the program to look for employee.csv within the directory
+data/xyz/data.
+
+Alternatively, you can also specify the xyz directory using an
+environment variable:
+
+  export DATASET=xyz
+  ./csvdb.pl -s "select id, name from employee"
+
+Or, you can do it all in one line:
+
+  DATASET=xyz ./csvdb.pl -s "select id, name from employee"
+
+So if, for example, you do only this:
 
   ./csvdb.pl -s "select distinct id, name from employee order by name"
 
-Then this expects to find a file employee.csv in the data directory,
-with at least a header line containing something like id, name, which
-are going to be the column headers.
+Then this expects to find a file employee.csv (in the data//data directory,
+because a dataset directory was not defined), with at least a header
+line containing something like id, name, which are going to be the
+column headers.
 
       Notice that column headers are going to be simplified in the sense
       that all special characters, including spaces, are replaced by
@@ -357,10 +376,58 @@ this option; when importing the resulting file into, for example,
 Excel, Excel will interpret them as text.
 
 
-
-
-
 =back
+
+
+=head1 INSTALLATION
+
+The program uses a number of perl modules. You can install
+those modules, if you are on a Linux or MacOS system, using
+the script B<install/src/configure/configure_perl.sh>. This
+will attempt to install the modules for you.
+
+Alternatively, if you do not want to mess with your local
+installation, you can install the whole package as to run
+inside a virtual machine (only install what you have not
+yet got):
+
+ 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+ 2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+ 3. Install [Git](https://git-scm.com/download)
+
+Then, you open a command line, e.g. on your Desktop, and do this:
+
+
+  git clone https://github.com/mnott/csvdb
+  cd csvdb
+  vagrant up
+
+
+
+You should then be able to open
+[the web application](http://localhost:8080/).
+You should also be able to use ssh to the virtual machine
+which should be running on IP 172.17.0.10 (this can be
+adapted inside the B<Vagrantfile> before using `vagrant up`)
+
+You can stop the virtual machine using, from the csvdb directory,
+
+  vagrant suspend
+
+You can delete the virtual machine using, from the csvdb directory,
+
+  vagrant global-status
+
+This will show you the virtual machine id like so:
+
+  id       name    provider   state   directory
+  ------------------------------------------------------------------
+  4a1b62b  default virtualbox running /Users/mnott/Desktop/csvdb
+
+You can then destroy the virtual machine using the id:
+
+  vagrant destroy 4a1b62b
+
 
 =cut
 
