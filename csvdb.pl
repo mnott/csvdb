@@ -92,10 +92,10 @@ GetOptions(
     'view|v:s'          => sub { $cfg->append(@_); },
     'params|p:s{,}'     => sub { $cfg->append(@_); },
     'doc|documentation' => sub { $cfg->append(@_); },
-    'help'              => sub { $cfg->append(@_); },
+    'help|?'            => sub { $cfg->append(@_); },
     'man'               => sub { $cfg->append(@_); },
 ) or pod2usage(2);
-pod2usage(1) if $cfg->contains_key("h");
+pod2usage(2) if $cfg->contains_key("help");
 
 pod2usage( -exitval => 0, -verbose => 2 ) if $cfg->contains_key("man");
 
