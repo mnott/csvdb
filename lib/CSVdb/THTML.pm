@@ -22,11 +22,8 @@ binmode STDOUT, ":utf8";
 use utf8;
 use Data::Dump "pp";
 
-use Apache2::compat;
-use Apache2::Request;
-use Apache::Session::DB_File;
-
 use CSVdb;
+use CSVdb::TCache;
 use CSVdb::TConfig;
 use CSVdb::TSession;
 
@@ -41,6 +38,9 @@ with 'MooseX::Log::Log4perl';
 use namespace::autoclean -except => sub { $_ =~ m{^t_.*} };
 
 
+#
+# Properties
+#
 has req     => ( is => 'rw' );    # HTTP request
 has ses     => ( is => 'rw' );    # HTTP session
 has view    => ( is => 'rw' );    # view directory
@@ -51,6 +51,7 @@ has views   => ( is => 'rw' );    # View   Name => Metadata
 has csvdb   => ( is => 'rw' );    # The CSVdb engine
 has cfg     => ( is => 'rw' );    # The Configuration
 has noclip  => ( is => 'rw' );    # Don't put clipboard actions
+has cache   => ( is => 'rw' );    # The cache
 
 
 #
@@ -67,7 +68,6 @@ has positions => (
     lazy    => 0,
     default => sub { {} },
 );
-
 
 
 #
@@ -88,6 +88,11 @@ sub BUILD {
     }
 
     #
+    # Initialize the cache
+    #
+    $self->cache( CSVdb::TCache->new );
+
+    #
     # Initialize the configuration holder
     #
     $self->cfg( CSVdb::TConfig->new );
@@ -98,15 +103,9 @@ sub BUILD {
     $self->csvdb( CSVdb->new( cfg => $self->cfg ) );
 
     #
-    # Get the Request handle
-    #
-    $self->req( Apache2::Request->new( $self->req ) );
-
-    #
-    # Register the HTTP session
+    # Initialize the HTTP session
     #
     $self->ses( CSVdb::TSession->new( req => $self->req ) );
-
 
     #
     # Read the dataset
@@ -133,9 +132,6 @@ sub BUILD {
     # Read the view definitions
     #
     $self->views( $self->read_json("$ENV{ROOT}/data/$dataset/views.json") );
-
-
-
 
 
     #
@@ -184,20 +180,25 @@ sub BUILD {
 # Read JSON file
 #
 sub read_json {
-    my ( $self, $json, $prefix ) = @_;
+    my ( $self, $json ) = @_;
 
-    my $cache_key = $self->csvdb->cache->key( $json, "json" );
-    my $result = $self->csvdb->cache->get($cache_key);
-    if ( !defined $result ) {
-        $self->log->debug("+ Reading $json");
-        {
-            local $/;    # Enable 'slurp' mode
-            open my $fh, "<", "$json";
-            $result = <$fh>;
-            close $fh;
+    my $result = $self->cache->get(
+        $json,
+        sub {
+            my $result;
+
+            $self->log->debug("+ Read  File: $json");
+            {
+                local $/;    # Enable 'slurp' mode
+                open my $fh, "<", "$json";
+                $result = <$fh>;
+                close $fh;
+            }
+
+            return $result;
         }
-        $self->csvdb->cache->set( $cache_key, $result );
-    }
+    );
+
     return decode_json($result);
 }
 
@@ -230,7 +231,6 @@ sub run {
 
 
     my $lines = 0;
-    my $odd   = 0;
 
     foreach my $row (@results) {
         $csv->parse($row);
@@ -240,8 +240,7 @@ sub run {
             $self->print_table_header( \@fields );
         }
         else {
-            $odd = $odd ? 0 : 1;
-            $self->print_table_line( \@fields, $odd, $lines );
+            $self->print_table_line( \@fields, $lines );
         }
 
         $lines++;
@@ -283,9 +282,9 @@ Content-type: text/html
 <body>
 HERE
 
-#
-# Optionally, output the dataset selection
-#
+    #
+    # Optionally, output the dataset selection
+    #
     if ( $self->name eq "Countries" ) {
         print <<'HERE';
 <iframe
@@ -379,10 +378,13 @@ sub parse_params {
 
 
     #
-    # Add a way to refresh the cache
+    # Add a way to flush the cache
     #
     my $refresh = $self->req->param("refresh");
-    $self->cfg->set( "refresh", $refresh );
+    if ( defined $refresh ) {
+        $self->cache->flush();
+        $self->cfg->set( "refresh", $refresh );
+    }
 
     #
     # Order Handling
@@ -597,7 +599,7 @@ sub print_table_header {
 # Print one line of a table.
 #
 sub print_table_line {
-    my ( $self, $fields, $odd, $line, $noclip ) = @_;
+    my ( $self, $fields, $line ) = @_;
 
     my $column = 0;
 
