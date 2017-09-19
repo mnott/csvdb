@@ -25,6 +25,7 @@ use feature qw(say);
 use Data::Dump "pp";
 use Pod::Usage;
 use File::Basename;
+use Encode qw(encode decode);
 use Storable qw(freeze thaw read_magic);
 use Scalar::Util qw(reftype);
 
@@ -34,6 +35,7 @@ use XML::LibXML;
 use XML::LibXML::PrettyPrint;
 
 our @EXPORT_OK = qw/ t_as_string t_split t_case t_serialize t_deserialize /;
+
 
 sub t_as_string {
     my $self = shift;
@@ -129,7 +131,7 @@ sub t_serialize {
     my ($obj) = @_;
 
     if ( !defined reftype($obj) ) {
-        return $obj;
+        return encode("utf8", $obj);
     }
     else {
         return freeze($obj);
@@ -143,7 +145,7 @@ sub t_deserialize {
         return thaw($obj);
     }
     else {
-        return $obj;
+        return decode("utf8", $obj);
     }
 }
 
