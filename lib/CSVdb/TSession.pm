@@ -20,6 +20,10 @@ use strict;
 binmode STDOUT, ":utf8";
 use utf8;
 
+use Apache2::compat;
+use Apache2::Request;
+use Apache::Session::DB_File;
+
 use Moose;
 with 'MooseX::Log::Log4perl';
 
@@ -27,7 +31,7 @@ use namespace::autoclean -except => sub { $_ =~ m{^t_.*} };
 
 
 #
-# The cache
+# Fields
 #
 has ses => ( is => 'rw' );
 has req => ( is => 'rw' );
@@ -38,6 +42,17 @@ has req => ( is => 'rw' );
 #
 sub BUILD {
     my ( $self, $arg_ref ) = @_;
+
+    #
+    # Initialize the Logger
+    #
+    Log::Log4perl->init_once( $ENV{ROOT} . '/log4p.ini' );
+
+    my $log = Log::Log4perl::get_logger("CSVdb");
+
+    if ( exists $ENV{LOGLEVEL} && "" ne $ENV{LOGLEVEL} ) {
+        $log->level( uc $ENV{LOGLEVEL} );
+    }
 
     #
     # Session handling
@@ -74,7 +89,7 @@ sub BUILD {
     #
     my $session_id = $session{_session_id};
     $session_id = "" unless defined $session_id;
-    my $session_cookie = "SESSION_ID=$session_id;";
+    my $session_cookie = "SESSION_ID=$session_id; path=/";
     $self->req->header_out( "Set-Cookie" => $session_cookie );
     $self->log->info("+ HTTP $session_cookie");
 
