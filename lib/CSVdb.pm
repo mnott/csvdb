@@ -184,6 +184,9 @@ has cache => ( is => 'rw' );
 sub BUILD {
     my ( $self, $arg_ref ) = @_;
 
+    #
+    # Initialize the Logger
+    #
     Log::Log4perl->init_once( $ENV{ROOT} . '/log4p.ini' );
 
     my $log = Log::Log4perl::get_logger("CSVdb");
@@ -192,6 +195,9 @@ sub BUILD {
         $log->level( uc $ENV{LOGLEVEL} );
     }
 
+    #
+    # Initialize the Cache
+    #
     $self->cache( CSVdb::TCache->new );
 }
 
@@ -206,6 +212,10 @@ sub run {
     my ($self) = @_;
 
     $self->log->debug("> Run");
+
+    if ( $self->cfg->get("refresh") ) {
+        $self->cache->refresh();
+    }
 
     #
     # Set default values

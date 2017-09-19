@@ -20,8 +20,6 @@ use strict;
 
 binmode STDOUT, ":utf8";
 use utf8;
-use Carp qw(carp cluck croak confess);
-use feature qw(say);
 use Data::Dump "pp";
 
 use Apache2::compat;
@@ -30,6 +28,8 @@ use Apache::Session::DB_File;
 
 use CSVdb;
 use CSVdb::TConfig;
+use CSVdb::TSession;
+
 
 use URL::Encode qw(url_encode_utf8);
 
@@ -41,13 +41,13 @@ with 'MooseX::Log::Log4perl';
 use namespace::autoclean -except => sub { $_ =~ m{^t_.*} };
 
 
-has ses     => ( is => 'rw' );    # HTTP session
 has req     => ( is => 'rw' );    # HTTP request
+has ses     => ( is => 'rw' );    # HTTP session
 has view    => ( is => 'rw' );    # view directory
 has data    => ( is => 'rw' );    # data directory
-has params  => ( is => 'rw' );    # Parameters into cfg for CSVdb
 has name    => ( is => 'rw' );    # Name of the template, ignore for links
 has columns => ( is => 'rw' );    # Column Name => Metadata
+has views   => ( is => 'rw' );    # View   Name => Metadata
 has csvdb   => ( is => 'rw' );    # The CSVdb engine
 has cfg     => ( is => 'rw' );    # The Configuration
 has noclip  => ( is => 'rw' );    # Don't put clipboard actions
@@ -76,6 +76,9 @@ has positions => (
 sub BUILD {
     my ( $self, $arg_ref ) = @_;
 
+    #
+    # Initialize the Logger
+    #
     Log::Log4perl->init_once( $ENV{ROOT} . '/log4p.ini' );
 
     my $log = Log::Log4perl::get_logger("CSVdb");
@@ -85,28 +88,117 @@ sub BUILD {
     }
 
     #
-    # Read the column definitions
-    #
-    my $json;
-    {
-        local $/;    #Enable 'slurp' mode
-        open my $fh, "<", "$ENV{ROOT}/html/columns.json";
-        $json = <$fh>;
-        close $fh;
-    }
-    $self->columns( decode_json($json) );
-
-    #
-    # Initialize the CSVdb engine. This also reads the
-    # request parameters.
+    # Initialize the configuration holder
     #
     $self->cfg( CSVdb::TConfig->new );
+
+    #
+    # Initialize the CSVdb engine.
+    #
     $self->csvdb( CSVdb->new( cfg => $self->cfg ) );
+
+    #
+    # Get the Request handle
+    #
+    $self->req( Apache2::Request->new( $self->req ) );
 
     #
     # Register the HTTP session
     #
-    $self->register_session;
+    $self->ses( CSVdb::TSession->new( req => $self->req ) );
+
+
+    #
+    # Read the dataset
+    #
+    my $dataset = $self->get_param( "dataset", "" );
+    $self->log->debug("+ Using dataset: $dataset");
+
+
+    #
+    # Read debug mode
+    #
+    $self->cfg->set( "debug", $self->get_param( "debug", $ENV{'DEBUG'} ) );
+    $self->log->debug( "+ Using debug mode: " . $self->cfg->get("debug") );
+
+
+
+    #
+    # Read the column definitions
+    #
+    $self->columns(
+        $self->read_json("$ENV{ROOT}/data/$dataset/columns.json") );
+
+    #
+    # Read the view definitions
+    #
+    $self->views( $self->read_json("$ENV{ROOT}/data/$dataset/views.json") );
+
+
+
+
+
+    #
+    # Parse the parameters
+    #
+
+    $self->parse_params;
+
+    #
+    # Read the View
+    #
+    my $view = $self->views->{ $self->req->param("view") };
+
+    #
+    # Name is used to identify the column which
+    # we don't want to add hyperlinks to (itself)
+    #
+    $self->name( $view->{name} );
+
+    #
+    # noclip is used to not show a clipboard copy icon
+    # left of a row.
+    #
+    $self->noclip( $view->{noclip} );
+
+    #
+    # Read the Request Parameters
+    #
+    $self->cfg->set( "view",
+        $ENV{ROOT} . "/data/$dataset/views/" . $view->{view} );
+    $self->cfg->set( "dir", $ENV{ROOT} . "/data/$dataset/data/" );
+
+
+    my @request_params;
+    foreach my $param ( @{ $view->{params} } ) {
+        my $val = $self->req->param($param);
+        if ( defined $val ) {
+            push @request_params, $param . "=" . $val;
+        }
+    }
+    $self->cfg->append( "params", \@request_params );
+}
+
+
+#
+# Read JSON file
+#
+sub read_json {
+    my ( $self, $json, $prefix ) = @_;
+
+    my $cache_key = $self->csvdb->cache->key( $json, "json" );
+    my $result = $self->csvdb->cache->get($cache_key);
+    if ( !defined $result ) {
+        $self->log->debug("+ Reading $json");
+        {
+            local $/;    # Enable 'slurp' mode
+            open my $fh, "<", "$json";
+            $result = <$fh>;
+            close $fh;
+        }
+        $self->csvdb->cache->set( $cache_key, $result );
+    }
+    return decode_json($result);
 }
 
 
@@ -167,7 +259,9 @@ sub run {
 sub start_html {
     my ($self) = @_;
 
-    my $startHtml = <<'HERE';
+    print <<'HERE';
+Content-type: text/html
+
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="styles.css" />
@@ -179,15 +273,37 @@ sub start_html {
         u.query.order=column;
         window.location.href=u;
     }
+    function refresh() {
+        var u = new Url;
+        u.query.refresh=1;
+        window.location.href=u;
+    }
 </script>
 </head>
 <body>
+HERE
+
+#
+# Optionally, output the dataset selection
+#
+    if ( $self->name eq "Countries" ) {
+        print <<'HERE';
+<iframe
+   id="datasets"
+   src="datasets.pl?debug=$debug"
+   frameborder="0"
+   width="100%"
+   marginheight="0"
+   marginwidth="0"
+   scrolling="no"
+></iframe>
+HERE
+    }
+
+    print <<'HERE';
 <div align="left">
 <table cellpadding="5" cellspacing="0" border="0" bordercolor="black" width="100%">
 HERE
-
-    print "Content-type: text/html\n\n";
-    print $startHtml;
 }
 
 
@@ -197,7 +313,7 @@ HERE
 sub end_html {
     my ($self) = @_;
 
-    my $endHtml = <<'HERE';
+    print <<'HERE';
 
 <tr class="h"><td>&nbsp;</td></tr>
 
@@ -219,89 +335,64 @@ sub end_html {
 </body>
 <html>
 HERE
+}
 
-    print $endHtml;
+
+sub get_param {
+    my ( $self, $param, $default ) = @_;
+
+    my $result = $self->req->param($param);
+
+    if ( defined $result ) {
+        $self->log->debug(
+            "+ Value for $param found in parameter: " . $result );
+        $self->ses->set( $param, $result );
+    }
+    else {
+        $result = $self->ses->get($param);
+        if ( defined $result ) {
+            $self->log->debug(
+                "+ Value for $param found in session  : " . $result );
+        }
+    }
+
+    if ( !defined $result ) {
+        $self->log->debug("+ Value for $param not found. Using $default.");
+        $result = $default;
+    }
+
+    return $result;
+
 }
 
 
 #
-# Register the browser session.
+# Parse the parameters
 #
-# We need this session to store request
-# metadata such as the currently selected
-# sort column.
-#
-sub register_session {
+sub parse_params {
     my ($self) = @_;
-
-    #
-    # Get the Request handle
-    #
-    $self->req( Apache2::Request->new( $self->req ) );
-
-    #
-    # Session handling
-    #
-    my $cookie = $self->req->header_in('Cookie');
-    if ( defined $cookie ) {
-        $cookie =~ s/SESSION_ID=(\w*)/$1/;
-    }
-
-    #
-    # Need to wrap since server may have restarted while
-    # browser with cookie is still open, leading to an
-    # error thrown by DB_File
-    #
-    my %session;
-
-    eval {
-
-        tie %session, 'Apache::Session::DB_File', $cookie,
-            {
-            FileName      => File::Spec->tmpdir . '/sessions.db',
-            LockDirectory => '/var/lock/apache2',
-            };
-    };
-    $self->log->warn("! $@") if $@;
-
-    #
-    # Remember the session
-    #
-    $self->ses( \%session );
-
-    #
-    # Might be a new session, so lets give them their cookie back
-    #
-    my $session_id = $session{_session_id};
-    $session_id = "" unless defined $session_id;
-    my $session_cookie = "SESSION_ID=$session_id;";
-    $self->req->header_out( "Set-Cookie" => $session_cookie );
-    $self->log->info("+ HTTP $session_cookie");
-
 
     #
     # Parameter handling
     #
-    my @request_params;
-    foreach my $param ( @{ $self->params } ) {
-        my $val = $self->req->param($param);
-        if ( defined $val ) {
-            push @request_params, $param . "=" . $val;
-        }
-    }
-    $self->cfg->set( "debug",  $ENV{'DEBUG'} );
-    $self->cfg->set( "params", \@request_params );
-    $self->cfg->set( "dir",    $ENV{ROOT} . "/" . $self->data );
-    $self->cfg->set( "view",   $ENV{ROOT} . "/" . $self->view );
-    $self->cfg->set( "raw",    1 );
+    $self->cfg->set( "raw", 1 );
 
+
+    #
+    # Add a way to refresh the cache
+    #
+    my $refresh = $self->req->param("refresh");
+    $self->cfg->set( "refresh", $refresh );
 
     #
     # Order Handling
     #
+    # (Using the Session to store its current value)
+    #
     my $param_order_col = $self->req->param("order"); # order col from Req
-    my $sess_order_col  = $session{order};            # order col from Session
-    my $sess_order_dir = $session{order_dir};   # order direction from Session
+    my $sess_order_col  = $self->ses->param("order"); # order col from Session
+    my $sess_order_dir
+        = $self->ses->param("order_dir");    # order direction from Session
 
     if ( defined $param_order_col ) {
         $self->log->debug( "+ Order from Parameter: " . $param_order_col );
@@ -386,8 +477,8 @@ sub register_session {
     # Now we have $sess_order_col and $sess_order_dir. We
     # set it back into the session for future use.
     #
-    $session{order}     = $sess_order_col;
-    $session{order_dir} = $sess_order_dir;
+    $self->ses->set( "order",     $sess_order_col );
+    $self->ses->set( "order_dir", $sess_order_dir );
 
     $self->log->debug(
         "+ Order now in Session: $sess_order_col $sess_order_dir");
@@ -396,14 +487,12 @@ sub register_session {
     # Construct the order string
     #
     my $order_str = " ORDER BY " . $sess_order_col . " " . $sess_order_dir;
-    $self->log->debug( "+ order_str: " . $order_str );
 
     #
     # Set it into the Configuration, for the CSVdb engine to pick
     # it up eventually.
     #
     $self->cfg->append( "params", "_ORDER_=$order_str" );
-
 }
 
 
@@ -455,7 +544,8 @@ sub print_table_header {
 
     my $column = 0;
 
-    print "<tr class=\"h\"><td>&nbsp;</td>\n";
+    print "<tr class=\"h\"><td onclick='refresh();'>&nbsp;</td>\n";
+
     foreach my $field (@$fields) {
 
         if ( defined $self->columns ) {

@@ -114,6 +114,15 @@ sub delete {
 
 
 
+sub refresh {
+    my ( $self ) = @_;
+
+    $self->log->debug("Refresh Cache");
+
+    $self->memcache->flush_all( );
+}
+
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
