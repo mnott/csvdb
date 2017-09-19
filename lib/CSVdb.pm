@@ -117,7 +117,7 @@ sub run {
     # Set default values
     #
     $self->cfg->set( "debug", 0 )      if !defined $self->cfg->get("debug");
-    $self->cfg->set( "dir",   "data" ) if !defined $self->cfg->get("dir");
+    $self->cfg->set( "dir",   "./data/$ENV{DATASET}/data" ) if !defined $self->cfg->get("dir");
     $self->cfg->set( "cols",  "" )     if !defined $self->cfg->get("cols");
     $self->cfg->set( "kols",  "" )     if !defined $self->cfg->get("kols");
     $self->cfg->set( "sql",   "" )     if !defined $self->cfg->get("sql");
