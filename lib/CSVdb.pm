@@ -30,8 +30,7 @@ use strict;
 
 binmode STDOUT, ":utf8";
 use utf8;
-use Carp qw(carp cluck croak confess);
-use feature qw(say);
+
 use Data::Dump "pp";
 use Pod::Usage;
 use File::Basename;
@@ -214,7 +213,8 @@ sub run {
     $self->log->debug("> Run");
 
     if ( $self->cfg->get("refresh") ) {
-        $self->cache->refresh();
+        $self->cache->flush();
+        $self->cfg->remove("refresh");
     }
 
     #
@@ -447,7 +447,7 @@ sub tbl_select {
         print STDERR "\n$sql\n\n";
     }
 
-    my $cache_key = $self->cache->key( $sql, "tbl_select" );
+    my $cache_key = $self->cache->key( $sql );
     my $cache_result = $self->cache->get($cache_key);
 
     if ( defined $cache_result ) {
