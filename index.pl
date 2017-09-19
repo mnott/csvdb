@@ -13,24 +13,53 @@ no warnings qw(redefine);
 binmode STDOUT, ":utf8";
 use utf8;
 
+use Apache2::compat;
+use Apache2::Request;
+
 use CSVdb::THTML;
+use CSVdb::TDatasets;
 
 ###################################################
 #
-# Run
+# Datasets directory
+#
+# Datasets are subdirectories under this directory.
+# They typically contain
+#
+# data/         Directory holding csv files
+# views/        Directory holding views
+# columns.json  File specifying output columns
+# views.json    File specifying the views
 #
 ###################################################
 
-my $req = shift;
+my $req = Apache2::Request->new(shift);
 
-$req = Apache2::Request->new($req);
+my $ds = CSVdb::TDatasets->new( req => $req, );
+
+my $dataset = $ds->dataset;
 
 my $debug   = $req->param("debug");
-my $dataset = $req->param("dataset");
 
-$dataset = "cloud_consolidated_pipeline" if !defined $dataset;
+if ( !defined $dataset ) {
+    print <<EOF;
+Content-type: text/html
 
-print <<EOF;
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CVSdb</title>
+  </head>
+  <body>
+  <h1>No datasets found.</h1>
+  </body>
+</html>
+EOF
+}
+else {
+    $debug = 0 if !defined $debug;
+
+    print <<EOF;
 Content-type: text/html
 
 <!DOCTYPE html>
@@ -51,3 +80,4 @@ Content-type: text/html
 </html>
 
 EOF
+}
