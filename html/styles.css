@@ -110,6 +110,14 @@ tr.h td {
   background-size: 13px 13px;
 }
 
+.refresh {
+  margin-top: -3px;
+  position: relative;
+  top: 3px;
+  background-image: url(refresh.png);
+  background-repeat:no-repeat;
+  background-size: 13px 13px;
+}
 
 
 
