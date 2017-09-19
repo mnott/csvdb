@@ -94,7 +94,7 @@ sub key {
 
 ###################################################
 #
-# Get something from the cache
+# Write something to the cache
 #
 #
 # $var: The cache key to use (will implicitly call
@@ -138,7 +138,7 @@ sub set {
 
 ###################################################
 #
-# Write something to the cache
+# Read something from the cache
 #
 # $var: The cache key to retrieve (will implicitly
 #       call key() on $var)

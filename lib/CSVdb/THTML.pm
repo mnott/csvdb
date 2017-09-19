@@ -39,7 +39,7 @@ use namespace::autoclean -except => sub { $_ =~ m{^t_.*} };
 
 
 #
-# Properties
+# Fields
 #
 has req     => ( is => 'rw' );    # HTTP request
 has ses     => ( is => 'rw' );    # HTTP session
