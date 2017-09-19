@@ -13,13 +13,8 @@ no warnings qw(redefine);
 binmode STDOUT, ":utf8";
 use utf8;
 
-use File::Slurp qw( read_dir );
-use File::Spec::Functions qw( catfile );
-use File::Basename;
 use Apache2::compat;
 use Apache2::Request;
-
-use Data::Dump "pp";
 
 use CSVdb::TUtils qw (t_case);
 use CSVdb::TDatasets;
