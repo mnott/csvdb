@@ -21,7 +21,7 @@ use CSVdb::THTML;
 #
 ###################################################
 
-my $req = shift;
+my $req = Apache2::Request->new(shift);
 
 my $thtml = CSVdb::THTML->new( req => $req, );
 
