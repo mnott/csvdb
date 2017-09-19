@@ -21,4 +21,4 @@ fi
 PRODUCT=$1
 shift
 
-./csvdb.pl -dir ./data/$DATASET/data -v ./data/$DATASET/views/product.sql -p PRODUCT="$PRODUCT" $@
+./csvdb.pl -dir ./data/$DATASET/data -s "select bp_org_name, opportunity_id, tcv_keur, opportunity_description, product, product_desc from pipeline where product = $PRODUCT order by bp_org_name, opportunity_id" $@

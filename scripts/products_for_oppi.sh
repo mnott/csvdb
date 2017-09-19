@@ -16,9 +16,9 @@ if [[ $# == 0 ]]; then
 fi
 
 #
-# Get the country
+# Get the oppi
 #
 OPPI=$1
 shift
 
-./csvdb.pl -dir ./data/$DATASET/data -v ./data/$DATASET/views/oppi.sql -p OPPI="$OPPI" $@
+./csvdb.pl -dir ./data/$DATASET/data -s "select bp_org_name, opportunity_id, tcv_keur, opportunity_description, product, product_desc from pipeline where opportunity_id = $OPPI order by bp_org_name, product_desc" $@
