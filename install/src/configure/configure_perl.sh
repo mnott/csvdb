@@ -39,6 +39,7 @@ sudo cpanm Apache::Session::File
 sudo cpanm Cache::Memcached
 sudo cpanm Digest::MD5
 sudo cpanm JSON
+sudo cpanm File::Slurp
 
 
 # Update to the current version of cvsdb to fix BOM error
