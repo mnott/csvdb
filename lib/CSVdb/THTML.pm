@@ -272,6 +272,13 @@ Content-type: text/html
         u.query.order=column;
         window.location.href=u;
     }
+    function filter(name, url) {
+        var resp = prompt(name, "");
+        if (resp != null && resp != "") {
+            url = url.replace("__VALUE__", resp);
+            document.location.href=url;
+        }
+    }
     function refresh() {
         var u = new Url;
         u.query.refresh=1;
@@ -559,13 +566,17 @@ sub print_table_header {
         my $name;
         my $align;
         my $header;
+        my $url;
+        my $search_url;
         my $header_url;
         my $header_target;
 
         if ( defined $column_definition ) {
             $name          = $column_definition->{"name"};
             $align         = $column_definition->{"align"};
+            $url           = $column_definition->{"url"};
             $header        = $column_definition->{"header"};
+            $search_url    = $column_definition->{"search_url"};
             $header_url    = $column_definition->{"header_url"};
             $header_target = $column_definition->{"header_target"};
         }
@@ -575,7 +586,17 @@ sub print_table_header {
             ? substr( $align, 0, 1 )
             : "l";
 
-        print "<td class=\"" . $c . "\">";
+        my $search_header = ( defined $header ) ? $header : $name;
+
+        my $search_link
+            = ( defined $search_url )
+            ? "oncontextmenu='javascript:filter(\""
+            . $search_header . "\",\""
+            . $search_url
+            . "\");return false;'"
+            : "oncontextmenu='javascript:return false;'";
+
+        print "<td class=\"" . $c . "\" $search_link >";
 
         print $self->build_url(
             {   name   => $name,
