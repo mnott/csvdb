@@ -116,12 +116,13 @@ sub run {
     #
     # Set default values
     #
-    $self->cfg->set( "debug", 0 )      if !defined $self->cfg->get("debug");
-    $self->cfg->set( "dir",   "./data/$ENV{DATASET}/data" ) if !defined $self->cfg->get("dir");
-    $self->cfg->set( "cols",  "" )     if !defined $self->cfg->get("cols");
-    $self->cfg->set( "kols",  "" )     if !defined $self->cfg->get("kols");
-    $self->cfg->set( "sql",   "" )     if !defined $self->cfg->get("sql");
-    $self->cfg->set( "view",  "" )     if !defined $self->cfg->get("view");
+    $self->cfg->set( "debug", 0 ) if !defined $self->cfg->get("debug");
+    $self->cfg->set( "dir", "./data/$ENV{DATASET}/data" )
+        if !defined $self->cfg->get("dir");
+    $self->cfg->set( "cols", "" ) if !defined $self->cfg->get("cols");
+    $self->cfg->set( "kols", "" ) if !defined $self->cfg->get("kols");
+    $self->cfg->set( "sql",  "" ) if !defined $self->cfg->get("sql");
+    $self->cfg->set( "view", "" ) if !defined $self->cfg->get("view");
     $self->cfg->set( "params", [] ) if !defined $self->cfg->get("params");
     $self->cfg->set( "raw",   0 ) if !defined $self->cfg->get("raw");
     $self->cfg->set( "quote", 0 ) if !defined $self->cfg->get("quote");
@@ -297,18 +298,25 @@ sub view_select {
 
     $self->log->debug("> view_select");
 
-    my $sql = "";
+    my $view = $self->cfg->get("view");
 
-    my $file = $self->cfg->get("view");
-    open( INFO, $file ) or die("Could not open file $file: $!");
+    my $sql = $self->cache->get(
+        $view,
+        sub {
+            my $result;
 
-    foreach my $line (<INFO>) {
-        next if $line =~ /^#/;
-        next if $line =~ /^$/;
+            open( INFO, $view ) or die("Could not open file $view: $!");
+            foreach my $line (<INFO>) {
+                next if $line =~ /^#/;
+                next if $line =~ /^$/;
 
-        $sql .= $line . " ";
-    }
-    close(INFO);
+                $result .= $line . " ";
+            }
+            close(INFO);
+
+            return $result;
+        }
+    );
 
     $self->tbl_select($sql);
 
