@@ -323,8 +323,6 @@ sub end_html {
 
     print <<'HERE';
 
-<tr class="h"><td>&nbsp;</td></tr></tbody>
-
 </table>
 </div>
 
