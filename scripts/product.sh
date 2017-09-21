@@ -4,14 +4,14 @@
 # Default Dataset
 #
 if [[ $DATASET == "" ]]; then
-  export DATASET=cloud_consolidated_pipeline
+  export DATASET=current
 fi
 
 #
 # Check whether we have at least one command line parameter
 #
 if [[ $# == 0 ]]; then
-  echo "Usage: [DATATASET=cloud_consolidated_pipeline] $0 product"
+  echo "Usage: [DATATASET=current] $0 product"
   exit 1
 fi
 

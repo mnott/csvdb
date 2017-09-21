@@ -4,7 +4,7 @@
 # Default Dataset
 #
 if [[ $DATASET == "" ]]; then
-  export DATASET=cloud_consolidated_pipeline
+  export DATASET=current
 fi
 
 #

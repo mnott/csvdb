@@ -178,7 +178,7 @@ zip -ver "$OUTPUT/$TARGET.zip" "$OUTPUT/$TARGET"
 if [[ -L "$OUTPUT/current" ]]; then
     rm -f "$OUTPUT/current";
 fi
-ln -s "$OUTPUT/$TARGET" "$OUTPUT/current"
+ln -s "$TARGET" "$OUTPUT/current"
 
 #
 # Done.
