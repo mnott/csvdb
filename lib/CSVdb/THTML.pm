@@ -279,11 +279,6 @@ Content-type: text/html
             document.location.href=url;
         }
     }
-    function refresh() {
-        var u = new Url;
-        u.query.refresh=1;
-        window.location.href=u;
-    }
 </script>
 </head>
 <body>
@@ -308,8 +303,15 @@ HERE
 
     print <<'HERE';
 <div align="left">
-<table cellpadding="5" cellspacing="0" border="0" bordercolor="black" width="100%">
 HERE
+
+print "<table ";
+
+if ($self->name ne "Countries") {
+  print "id=\"fulltable\"";
+}
+
+print " cellpadding=\"5\" cellspacing=\"0\" border=\"0\" bordercolor=\"black\" width=\"100%\">";
 }
 
 
@@ -321,7 +323,7 @@ sub end_html {
 
     print <<'HERE';
 
-<tr class="h"><td>&nbsp;</td></tr>
+<tr class="h"><td>&nbsp;</td></tr></tbody>
 
 </table>
 </div>
@@ -382,16 +384,6 @@ sub parse_params {
     # Parameter handling
     #
     $self->cfg->set( "raw", 1 );
-
-
-    #
-    # Add a way to flush the cache
-    #
-    my $refresh = $self->req->param("refresh");
-    if ( defined $refresh ) {
-        $self->cache->flush();
-        $self->cfg->set( "refresh", $refresh );
-    }
 
     #
     # Order Handling
@@ -553,7 +545,15 @@ sub print_table_header {
 
     my $column = 0;
 
-    print "<tr class=\"h\"><td onclick='refresh();'>&nbsp;</td>\n";
+    pp $self;
+
+    print "<thead><tr class=\"h\">";
+
+    if ($self->noclip) {
+        print "<td>&nbsp;</td>";
+    } else {
+        print "<td class=\"clippy\" data-clipboard-target=\"#fulltable\" style=\"top:0px;font-size:11px\">&#128203;</td>\n";
+    }
 
     foreach my $field (@$fields) {
 
@@ -589,7 +589,7 @@ sub print_table_header {
         my $search_header = ( defined $header ) ? $header : $name;
 
         my $search_link
-            = ( defined $search_url )
+            = ( defined $search_url && $self->name ne "Countries" )
             ? "oncontextmenu='javascript:filter(\""
             . $search_header . "\",\""
             . $search_url
@@ -612,7 +612,7 @@ sub print_table_header {
 
         $column++;
     }
-    print "</tr>\n";
+    print "</tr></thead><tbody>\n";
 }
 
 
@@ -629,7 +629,7 @@ sub print_table_line {
     }
     else {
         print
-            "<tr id=\"l$line\" ><td class=\"clippy\" data-clipboard-target=\"#l$line\">&nbsp;</td>\n";
+            "<tr id=\"l$line\" ><td class=\"clippy\" data-clipboard-target=\"#l$line\">&#128203;</td>\n";
     }
 
     foreach my $field (@$fields) {
@@ -693,8 +693,10 @@ sub build_url {
     #
     # Shortcut if we don't even have an url
     #
+
     if ( !defined $url
-        || ( defined $self->name && defined $name && $name eq $self->name ) )
+        || ( !defined $self->req->param("search") && defined $self->name && defined $name && $name eq $self->name )
+        )
     {
         if ( defined $header ) {
             $result .= $header;
