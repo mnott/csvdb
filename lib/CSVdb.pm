@@ -243,6 +243,8 @@ sub dbi_connect {
     # Declare stored functions (see package main below)
     #
     $dbh->do('CREATE FUNCTION rnd EXTERNAL');
+    $dbh->do('CREATE FUNCTION trim_oppi EXTERNAL');
+    $dbh->do('CREATE FUNCTION intl_date EXTERNAL');
 
     $self->cfg->set( "dbh", $dbh );
 
@@ -348,7 +350,8 @@ sub tbl_select {
         print STDERR "\n$sql\n\n";
     }
 
-    my $cache_key    = $self->cache->key($sql);
+    my $cache_key
+        = $self->cache->key( $sql . " -- " . $self->cfg->get("dir") );
     my $cache_result = $self->cache->get($cache_key);
 
     if ( defined $cache_result ) {
@@ -365,7 +368,9 @@ sub tbl_select {
 
     $self->cfg->set( "sth", $sth );
 
+    $self->log->debug("> Executing SQL select");
     $sth->execute();
+    $self->log->debug("< Executing SQL select");
 
     my @cols;           # The column names
     my $tbl_results;    # The tabular result
@@ -535,6 +540,23 @@ sub rnd {
     $n = int( $n + 0.5 );    # Would round to full number
 
     return $n;
+}
+
+sub trim_oppi {
+    my ( $self, $sth, $oppi ) = @_;
+
+    $oppi =~ s/^0//;         # remove leading 0
+
+    return $oppi;
+}
+
+sub intl_date {
+    my ( $self, $sth, $date ) = @_;
+
+    if ( $date =~ m!(\d\d)/(\d\d)/(\d\d\d\d)! ) {
+        $date = "$3-$1-$2";
+    }
+    return $date;
 }
 
 1;
