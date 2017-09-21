@@ -1,7 +1,5 @@
 #!/bin/bash
 
-VIEWS=./views
-
 if [ $# -lt 2 ]; then
   echo $0: Join two CSV files, using the header of the first.
   echo Output goes to stdout.
