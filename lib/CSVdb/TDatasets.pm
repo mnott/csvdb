@@ -76,18 +76,21 @@ sub BUILD {
     #
     # Read the list of datasets
     #
+    my $path = "$ENV{ROOT}data";
+
+    my @ignore = ( "$path/input", "$path/current" );
+
     my $datasets = $self->cache->get(
         "datasets",
         sub {
             $self->log->debug("+ Reading datasets from file system");
-
-            my $path = "$ENV{ROOT}/data";
 
             my @sub_dirs = grep {-d} map { catfile $path, $_ } read_dir $path;
 
             my @datasets;
 
             foreach my $sub_dir (@sub_dirs) {
+                next if grep( /^$sub_dir$/, @ignore);
                 my $location = fileparse($sub_dir);
                 push( @datasets, $location );
             }
