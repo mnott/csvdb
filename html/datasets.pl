@@ -18,6 +18,8 @@ use Apache2::Request;
 
 use CSVdb::TUtils qw (t_case);
 use CSVdb::TDatasets;
+use CSVdb::TCache;
+
 
 ###################################################
 #
@@ -45,23 +47,50 @@ Content-type: text/html
 <!DOCTYPE html>
 <html>
 <link rel="stylesheet" type="text/css" href="styles.css" />
+<script src="url.min.js"></script>
+<script type="text/javascript">
+    function refresh() {
+        var u = new Url;
+        u.query.refresh=1;
+        window.location.href=u;
+    }
+</script>
 </head>
 <body>
 <div id="content" align="left">
 <table cellpadding="5" cellspacing="0" border="0" bordercolor="black" width="100%">
-<tr class="h"><td>&nbsp;</td><td class="l">Datasets</td></tr>
+<thead><tr class="h"><td class="r" onclick="refresh();">&#x21bb;</td><td class="l">Datasets</td></tr></thead><tbody>
 EOF
 
+
+#
+# Add a way to flush the cache
+#
+my $refresh = $req->param("refresh");
+if ( defined $refresh ) {
+    my $cache = CSVdb::TCache->new;
+    $cache->flush();
+}
+
+#
+# Print the datasets
+#
 for my $dataset ( @$datasets ) {
     my $description = $ds->describe($dataset);
 
+    if ($dataset eq $ds->dataset) {
+        print "<tr><td class=\"r\">&#10004;</td>";
+    } else {
+        print "<tr><td>&nbsp;</td>";
+    }
+
     print <<EOF
-    <tr><td>&nbsp;</td></td><td><a href="/index.pl?dataset=$dataset" target="_top">$description</a></td>
+    </td><td><a href="/index.pl?dataset=$dataset" target="_top">$description</a></td>
 EOF
 }
 
 print <<EOF
-</table>
+</tbody></table>
 </div>
 
     <script>
