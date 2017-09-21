@@ -247,7 +247,7 @@ sub delete {
 sub flush {
     my ($self) = @_;
 
-    $self->log->debug("Refresh Cache");
+    $self->log->debug("+ Refresh Cache");
 
     $self->memcache->flush_all();
 }
