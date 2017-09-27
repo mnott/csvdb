@@ -89,7 +89,7 @@ sub BUILD {
 
             my @datasets;
 
-            foreach my $sub_dir (@sub_dirs) {
+            foreach my $sub_dir (sort @sub_dirs) {
                 next if grep( /^$sub_dir$/, @ignore);
                 my $location = fileparse($sub_dir);
                 push( @datasets, $location );
