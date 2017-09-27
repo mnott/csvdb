@@ -278,6 +278,14 @@ You should also be able to use ssh to the virtual machine
 which should be running on IP 172.17.0.10 (this can be
 adapted inside the **Vagrantfile** before using \`vagrant up\`)
 
+To SSH into your virtual machine, you can just use
+
+    vagrant ssh
+
+and then, to become root,
+
+    sudo su -
+
 You can stop the virtual machine using, from the csvdb directory,
 
     vagrant suspend
@@ -295,3 +303,10 @@ This will show you the virtual machine id like so:
 You can then destroy the virtual machine using the id:
 
     vagrant destroy 4a1b62b
+
+If you don't want to deal with Vagrant via the command line, there
+is an excellent frontend about it:
+
+\[Vagrant Manager\](http://vagrantmanager.com)
+
+It is highly recommendable to use Vagrant Manager.
