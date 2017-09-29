@@ -266,7 +266,21 @@ yet got):
     2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
     3. Install [Git](https://git-scm.com/download)
 
-Then, you open a command line, e.g. on your Desktop, and do this:
+Very important: If you are working on a Windows system, make sure
+to configure Git, when it installs, to \*not automatically\* convert
+Line Ends ("CR/LF"). Shouly you have configured it wrongly, you can
+do this on the command line:
+
+    git config --global core.autocrlf false
+
+Also, before continuing, make sure that you have switched on
+Virtualization in your BIOS (the feature is often under either
+Configuration or Security, and is often called Intel Virtualization
+Technology and VT-d Feature: Enable both). If you fail to do this,
+the virtual machine will not start up, and also may be recognized
+wrongly as 32bit.
+
+Finally, you open a command line, e.g. on your Desktop, and do this:
 
     git clone https://github.com/mnott/csvdb
     cd csvdb
@@ -274,9 +288,6 @@ Then, you open a command line, e.g. on your Desktop, and do this:
 
 You should then be able to open
 \[the web application\](http://localhost:8080/).
-You should also be able to use ssh to the virtual machine
-which should be running on IP 172.17.0.10 (this can be
-adapted inside the **Vagrantfile** before using \`vagrant up\`)
 
 To SSH into your virtual machine, you can just use
 
@@ -292,17 +303,7 @@ You can stop the virtual machine using, from the csvdb directory,
 
 You can delete the virtual machine using, from the csvdb directory,
 
-    vagrant global-status
-
-This will show you the virtual machine id like so:
-
-    id       name    provider   state   directory
-    ------------------------------------------------------------------
-    4a1b62b  default virtualbox running /Users/mnott/Desktop/csvdb
-
-You can then destroy the virtual machine using the id:
-
-    vagrant destroy 4a1b62b
+    vagrant destroy
 
 If you don't want to deal with Vagrant via the command line, there
 is an excellent frontend about it:
