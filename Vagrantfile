@@ -29,14 +29,6 @@ Vagrant.configure(2) do |config|
      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
-  config.vm.provision "shell" do |s|
-    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
-    s.inline = <<-SHELL
-      mkdir -p /root/.ssh
-      chmod 600 /root/.ssh
-      echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
-      echo #{ssh_pub_key} >> /root/.ssh/authorized_keys2
-    SHELL
-  end
+
 
 end
