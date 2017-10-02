@@ -17,12 +17,15 @@ OUTPUT=data
 DATASET1=cloud_consolidated_pipeline
 DATASET2=global_salesprogram_incentive
 
-SOURCE11=data/$INPUT/$DATASET1/data/pipeline.csv
+SOURCE11=data/$INPUT/$DATASET1/data/pipeline_emea.csv
+SOURCE12=data/$INPUT/$DATASET1/data/pipeline_mee.csv
 
 SOURCE21=data/$INPUT/$DATASET2/data/q3_emea.csv
 SOURCE22=data/$INPUT/$DATASET2/data/q4_emea.csv
-SOURCE23=data/$INPUT/$DATASET2/data/q3_mee.csv
-SOURCE24=data/$INPUT/$DATASET2/data/q4_mee.csv
+SOURCE23=data/$INPUT/$DATASET2/data/q1_emea.csv
+SOURCE24=data/$INPUT/$DATASET2/data/q3_mee.csv
+SOURCE25=data/$INPUT/$DATASET2/data/q4_mee.csv
+SOURCE26=data/$INPUT/$DATASET2/data/q1_mee.csv
 
 #
 # Template Dataset
@@ -48,6 +51,11 @@ if [[ ! -f "$SOURCE11" ]]; then
     exit 1
 fi
 
+if [[ ! -f "$SOURCE12" ]]; then
+    echo "$SOURCE11 not found. Exiting."
+    exit 1
+fi
+
 if [[ ! -f "$SOURCE21" ]]; then
     echo "$SOURCE21 not found. Exiting."
     exit 1
@@ -64,6 +72,16 @@ if [[ ! -f "$SOURCE23" ]]; then
 fi
 
 if [[ ! -f "$SOURCE24" ]]; then
+    echo "$SOURCE24 not found. Exiting."
+    exit 1
+fi
+
+if [[ ! -f "$SOURCE25" ]]; then
+    echo "$SOURCE24 not found. Exiting."
+    exit 1
+fi
+
+if [[ ! -f "$SOURCE26" ]]; then
     echo "$SOURCE24 not found. Exiting."
     exit 1
 fi
@@ -114,6 +132,21 @@ cat     "$SOURCE21" >  "data/$INPUT/$DATASET2/data/pipeline.csv"
 tail +2 "$SOURCE22" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
 tail +2 "$SOURCE23" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
 tail +2 "$SOURCE24" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
+tail +2 "$SOURCE25" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
+tail +2 "$SOURCE26" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
+
+
+#
+# Join SOURCE12 and SOURCE22
+#
+echo ""
+echo ""
+echo "Joining $SOURCE11, $SOURCE12 into data/$INPUT/$DATASET1/pipeline.csv"
+echo ""
+
+cat     "$SOURCE11" >  "data/$INPUT/$DATASET1/data/pipeline.csv"
+tail +2 "$SOURCE12" >> "data/$INPUT/$DATASET1/data/pipeline.csv"
+
 
 #
 # Extract Dataset 2
