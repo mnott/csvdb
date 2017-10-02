@@ -53,7 +53,7 @@ Content-type: text/html
         var u = new Url;
         u.query.refresh=1;
         window.location.href=u;
-        window.parent.location.reload();
+        window.parent.parent.location.reload();
     }
 </script>
 </head>
