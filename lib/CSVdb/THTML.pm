@@ -275,7 +275,7 @@ Content-type: text/html
     function filter(name, url) {
         var resp = prompt(name, "");
         if (resp != null && resp != "") {
-            url = url.replace("__VALUE__", resp);
+            url = url.replace("__VALUE__", encodeURIComponent(resp));
             document.location.href=url;
         }
     }
