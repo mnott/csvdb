@@ -190,8 +190,8 @@ sub read_json {
             $self->log->debug("+ Read  File: $json");
             {
                 local $/;    # Enable 'slurp' mode
-                open my $fh, "<", "$json";
-                $result = <$fh>;
+                open my $fh, "<", "$json" || die "Error opening: $json: $!";
+                $result = <$fh> || die "Error opening: $json: $!";
                 close $fh;
             }
 
@@ -542,8 +542,6 @@ sub print_table_header {
     my ( $self, $fields ) = @_;
 
     my $column = 0;
-
-    pp $self;
 
     print "<thead><tr class=\"h\">";
 
