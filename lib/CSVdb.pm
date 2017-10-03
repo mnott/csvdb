@@ -474,8 +474,6 @@ sub parse_sql {
 
     $self->log->debug("> parse_sql");
 
-    $self->cfg->dump();
-
     my $params = $self->cfg->get("params");
 
     if ( ref $params eq 'HASH' ) {
