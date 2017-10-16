@@ -17,8 +17,8 @@ OUTPUT=data
 DATASET1=cloud_consolidated_pipeline
 DATASET2=global_salesprogram_incentive
 
-SOURCE11=data/$INPUT/$DATASET1/data/pipeline_emea.csv
-SOURCE12=data/$INPUT/$DATASET1/data/pipeline_mee.csv
+SOURCE11=data/$INPUT/$DATASET1/data/pipeline_qc.csv
+SOURCE12=data/$INPUT/$DATASET1/data/pipeline_qn.csv
 
 SOURCE21=data/$INPUT/$DATASET2/data/q3_emea.csv
 SOURCE22=data/$INPUT/$DATASET2/data/q4_emea.csv
@@ -52,7 +52,7 @@ if [[ ! -f "$SOURCE11" ]]; then
 fi
 
 if [[ ! -f "$SOURCE12" ]]; then
-    echo "$SOURCE11 not found. Exiting."
+    echo "$SOURCE12 not found. Exiting."
     exit 1
 fi
 
@@ -77,12 +77,12 @@ if [[ ! -f "$SOURCE24" ]]; then
 fi
 
 if [[ ! -f "$SOURCE25" ]]; then
-    echo "$SOURCE24 not found. Exiting."
+    echo "$SOURCE25 not found. Exiting."
     exit 1
 fi
 
 if [[ ! -f "$SOURCE26" ]]; then
-    echo "$SOURCE24 not found. Exiting."
+    echo "$SOURCE26 not found. Exiting."
     exit 1
 fi
 
@@ -203,7 +203,11 @@ if [[ -f "$OUTPUT/$TARGET.zip" ]]; then
     rm -f "$OUTPUT/$TARGET.zip"
 fi
 
-zip -ver "$OUTPUT/$TARGET.zip" "$OUTPUT/$TARGET"
+(
+  cd "$OUTPUT"
+
+  zip -ver "$TARGET.zip" "$TARGET"
+)
 
 #
 # Create Symlink for other scripts
