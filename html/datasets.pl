@@ -53,11 +53,16 @@ Content-type: text/html
         var u = new Url;
         u.query.refresh=1;
         window.location.href=u;
-        window.parent.parent.location.reload();
+    }
+    function check_parent_refresh() {
+        var u = new Url;
+        if (u.query.refresh == 1) {
+            window.parent.parent.location.reload()
+        }
     }
 </script>
 </head>
-<body>
+<body onload="check_parent_refresh();">
 <div id="content" align="left">
 <table cellpadding="5" cellspacing="0" border="0" bordercolor="black" width="100%">
 <thead><tr class="h"><td class="r"><a href="#" class="h" onclick="refresh();">&#x21bb;</a></td><td class="l">Datasets</td></tr></thead><tbody>
