@@ -101,9 +101,12 @@ TS=`date +"%Y-%m-%d"`
 #
 # Output Dataset
 #
-TARGET="joined_pipeline - $TS"
+TARGET="$TS"
 
-
+#
+# Remember old Dataset
+#
+for i in $(ls -latrd1 $OUTPUT/20* | head -1); do export OLDDATA=data/$(basename "$i")/data; done
 
 #
 # Copy Template
@@ -191,6 +194,31 @@ echo ""
 echo Removing temporary database $OUTPUT/$TARGET/data/temp.csv
 echo ""
 rm "$OUTPUT/$TARGET/data/temp.csv"
+
+
+#
+# Create Delta Database
+#
+echo ""
+echo ""
+echo Creating Delta Database
+echo ""
+export DATASET=${TARGET}
+
+cp $OLDDATA/pipeline.csv             $OUTPUT/${TARGET}/data/temp1.csv
+cp $OUTPUT/$TARGET/data/pipeline.csv $OUTPUT/${TARGET}/data/temp2.csv
+
+./csvdb.pl -d -v $OUTPUT/${TARGET}/views/extract_delta.sql -r -h -p "_TABLE_=temp1" | sort >"$OUTPUT/${TARGET}/data/temp1j.csv"
+./csvdb.pl -d -v $OUTPUT/${TARGET}/views/extract_delta.sql -r -h -p "_TABLE_=temp2" | sort >"$OUTPUT/${TARGET}/data/temp2j.csv"
+
+echo -n "testchen," >$OUTPUT/${TARGET}/data/temp_pipeline.csv
+
+head -1 $OUTPUT/$TARGET/data/pipeline.csv >>$OUTPUT/${TARGET}/data/temp_pipeline.csv
+diff --unchanged-line-format= --old-line-format= --new-line-format='%L' $OUTPUT/${TARGET}/data/temp1j.csv $OUTPUT/${TARGET}/data/temp2j.csv >>$OUTPUT/${TARGET}/data/temp_pipeline.csv
+
+./csvdb.pl -d -v $OUTPUT/${TARGET}/views/compress_delta.sql -r -p "_TABLE_=temp_pipeline" >$OUTPUT/${TARGET}/data/pipeline_d.csv
+
+rm $OUTPUT/${TARGET}/data/temp*.csv
 
 #
 # Create Archive

@@ -120,6 +120,11 @@ sub BUILD {
     $self->cfg->set( "debug", $self->get_param( "debug", $ENV{'DEBUG'} ) );
     $self->log->debug( "+ Using debug mode: " . $self->cfg->get("debug") );
 
+    #
+    # Read delta mode
+    #
+    $self->cfg->set( "delta", $self->get_param( "delta", 0 ) );
+    $self->log->debug( "+ Using delta mode: " . $self->cfg->get("delta") );
 
 
     #
@@ -172,6 +177,13 @@ sub BUILD {
             push @request_params, $param . "=" . $val;
         }
     }
+
+    if ($self->get_param( "delta", 0) != 0) {
+        push @request_params, "_DELTA_=_d";
+    } else {
+        push @request_params, "_DELTA_=";
+    }
+
     $self->cfg->append( "params", \@request_params );
 }
 
@@ -278,6 +290,11 @@ Content-type: text/html
             url = url.replace("__VALUE__", encodeURIComponent(resp));
             document.location.href=url;
         }
+    }
+    function delta(delta) {
+        var u = new Url;
+        u.query.delta=delta;
+        window.location.href=u;
     }
 </script>
 </head>
@@ -545,6 +562,16 @@ sub print_table_header {
 
     print "<thead><tr class=\"h\">";
 
+    #
+    # Delta: &#8710;
+    # All  : &#8704;
+    #
+    if($self->get_param( "delta", 0 ) == 0) {
+        print "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(1);\">&#8710;</a></td>";
+    } else {
+        print "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(0);\">&#8704;</a></td>";
+    }
+
     if ($self->noclip) {
         print "<td>&nbsp;</td>";
     } else {
@@ -621,11 +648,11 @@ sub print_table_line {
     my $column = 0;
 
     if ( $self->noclip ) {
-        print "<tr><td>&nbsp;</td>\n";
+        print "<tr><td>&nbsp;</td><td>&nbsp;</td>\n";
     }
     else {
         print
-            "<tr id=\"l$line\" ><td class=\"clippy\" data-clipboard-target=\"#l$line\">&#128203;</td>\n";
+            "<tr id=\"l$line\" ><td>&nbsp;</td><td class=\"clippy\" data-clipboard-target=\"#l$line\">&#128203;</td>\n";
     }
 
     foreach my $field (@$fields) {

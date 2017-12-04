@@ -41,6 +41,12 @@ my $dataset = $ds->dataset;
 
 my $debug   = $req->param("debug");
 
+my $delta   = $req->param("delta");
+
+if(! defined $delta || $delta eq "") {
+  $delta = 0;
+}
+
 if ( !defined $dataset ) {
     print <<EOF;
 Content-type: text/html
@@ -70,8 +76,8 @@ Content-type: text/html
   </head>
 
   <frameset cols = "10%,80%" frameborder="0">
-    <frame name = "countries" src = "html/view.pl?debug=$debug&dataset=$dataset&view=countries" />
-    <frame name = "main"      src = "html/view.pl?debug=$debug&dataset=$dataset&view=country&country=UKI" />
+    <frame name = "countries" src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=countries" />
+    <frame name = "main"      src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=country&country=UKI" />
     <noframes>
       <body>Your browser does not support frames.</body>
     </noframes>

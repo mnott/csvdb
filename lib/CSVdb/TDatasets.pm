@@ -130,6 +130,18 @@ sub BUILD {
     # current dataset, and also $self->datasets, with
     # all data sets, as members.
     #
+
+    #
+    # Try to read the delta mode
+    #
+    my $delta = $self->req->param("delta");
+    if (!defined $delta) {
+        $delta = $self->ses->get("delta");
+    }
+    if (!defined $delta) {
+        $delta = 0;
+        $self->ses->set("delta", $delta)
+    }
 }
 
 
