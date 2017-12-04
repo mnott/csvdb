@@ -104,11 +104,6 @@ TS=`date +"%Y-%m-%d"`
 TARGET="$TS"
 
 #
-# Remember old Dataset
-#
-for i in $(ls -latrd1 $OUTPUT/20* | head -1); do export OLDDATA=data/$(basename "$i")/data; done
-
-#
 # Copy Template
 #
 echo ""
@@ -120,6 +115,12 @@ if [[ -d "$OUTPUT/$TARGET" ]]; then
     echo "$OUTPUT/$TARGET exists, removing..."
     rm -rf "$OUTPUT/$TARGET"
 fi
+
+#
+# Remember old Dataset
+#
+for i in $(ls -latrd1 $OUTPUT/20* | head -1); do export OLDDATA=data/$(basename "$i")/data; done
+
 
 cp -av "data/$INPUT/$SOURCE" "$OUTPUT/$TARGET"
 
