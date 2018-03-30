@@ -310,4 +310,21 @@ is an excellent frontend about it:
 
 \[Vagrant Manager\](http://vagrantmanager.com)
 
-It is highly recommendable to use Vagrant Manager.
+It is highly recommendable to use Vagrant Manager. For Windows, we have
+found that for current versions of Vagrant, you need to use Version 1.0.0.7:
+
+\[Vagrant Manager 1.0.0.7 for Windows\](https://github.com/deveres/vagrant-manager-windows/releases/download/1.0.0.7/vagrant-manager-windows-1.0.0.7.exe)
+
+
+# Proxy Settings
+
+If Git does not work because of a proxy, you will need Git to use your proxy.
+
+Do this in a command line:
+
+  git config --global http.proxy http://proxy:8083
+
+If Vagrant does not work because of your proxy, please review the proxy
+settings in Vagrantfile (optionally comment them out).
+
+
