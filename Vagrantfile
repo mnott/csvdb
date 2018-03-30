@@ -7,9 +7,12 @@
 
 Vagrant.configure(2) do |config|
 
-  config.proxy.http     = "http://proxy:8083"
-  config.proxy.https    = "http://proxy:8083"
-  config.proxy.no_proxy = "localhost,127.0.0.1"
+  #
+  # You can experiment with proxy settings like so:
+  #
+  # config.proxy.http     = "http://proxy:8083"
+  # config.proxy.https    = "http://proxy:8083"
+  # config.proxy.no_proxy = "localhost,127.0.0.1"
 
   #
   # Modify your shared folder here

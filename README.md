@@ -322,7 +322,13 @@ If Git does not work because of a proxy, you will need Git to use your proxy.
 
 Do this in a command line:
 
+  git config --global http.proxy http://proxy:8083
   git config --global https.proxy http://proxy:8083
+
+If you have problems with your proxy settings, you can unset them as follows:
+
+  git config --global --unset http.proxy
+  git config --global --unset https.proxy
 
 If Vagrant does not work because of your proxy, please review the proxy
 settings in Vagrantfile (optionally comment them out). Also, you'll need
