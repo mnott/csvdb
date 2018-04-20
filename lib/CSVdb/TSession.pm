@@ -109,6 +109,12 @@ sub get {
     return $self->ses->{$var};
 }
 
+sub remove {
+    my ( $self, $var ) = @_;
+
+    delete $self->ses->{$var};
+}
+
 sub param {
     my ( $self, $var ) = @_;
 
