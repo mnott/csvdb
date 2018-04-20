@@ -543,7 +543,7 @@ sub rnd {
 sub trim_oppi {
     my ( $self, $sth, $oppi ) = @_;
 
-    $oppi =~ s/^0//;         # remove leading 0
+    $oppi =~ s/^0*//;         # remove leading 0s
 
     return $oppi;
 }
