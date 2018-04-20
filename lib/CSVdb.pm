@@ -480,6 +480,7 @@ sub parse_sql {
         foreach my $key ( keys %$params ) {
             my $val = %{ $self->cfg->get("params") }{$key};
             if ( defined $val ) {
+                $val =~ s/'/%/g;
                 $sql =~ s/$key/$val/g;
             }
         }
