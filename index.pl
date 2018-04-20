@@ -77,7 +77,7 @@ Content-type: text/html
 
   <frameset cols = "10%,80%" frameborder="0">
     <frame name = "countries" src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=countries" />
-    <frame name = "main"      src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=country&country=UKI" />
+    <frame name = "main"      src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=country&country=Spain" />
     <noframes>
       <body>Your browser does not support frames.</body>
     </noframes>
