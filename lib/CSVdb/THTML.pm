@@ -454,6 +454,9 @@ sub get_param {
     }
 
     if ( !defined $result ) {
+        if (!defined $default) {
+            $default = "";
+        }
         $self->log->debug("+ Value for $param not found. Using $default.");
         if ( defined $default ) {
             $result = $default;
