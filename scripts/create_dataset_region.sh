@@ -208,20 +208,30 @@ create_dataset() {
     echo ""
     export DATASET=${TARGET}
 
-    cp "$OLDDATA/pipeline.csv"             "$OUTPUT/${TARGET}/data/temp1.csv"
-    cp "$OUTPUT/$TARGET/data/pipeline.csv" "$OUTPUT/${TARGET}/data/temp2.csv"
+    if [[ -f "$OLDDATA/pipeline.csv" ]]; then
+        cp "$OLDDATA/pipeline.csv"             "$OUTPUT/${TARGET}/data/temp1.csv"
+        cp "$OUTPUT/$TARGET/data/pipeline.csv" "$OUTPUT/${TARGET}/data/temp2.csv"
 
-    ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/extract_delta.sql" -r -h -p "_TABLE_=temp1" | sort >"$OUTPUT/${TARGET}/data/temp1j.csv"
-    ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/extract_delta.sql" -r -h -p "_TABLE_=temp2" | sort >"$OUTPUT/${TARGET}/data/temp2j.csv"
+        ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/extract_delta.sql" -r -h -p "_TABLE_=temp1" | sort >"$OUTPUT/${TARGET}/data/temp1j.csv"
+        ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/extract_delta.sql" -r -h -p "_TABLE_=temp2" | sort >"$OUTPUT/${TARGET}/data/temp2j.csv"
 
-    echo -n "testchen," >"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
+        echo -n "testchen," >"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
 
-    head -1 "$OUTPUT/$TARGET/data/pipeline.csv" >>"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
-    diff --unchanged-line-format= --old-line-format= --new-line-format='%L' "$OUTPUT/${TARGET}/data/temp1j.csv" "$OUTPUT/${TARGET}/data/temp2j.csv" >>"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
+        head -1 "$OUTPUT/$TARGET/data/pipeline.csv" >>"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
+        diff --unchanged-line-format= --old-line-format= --new-line-format='%L' "$OUTPUT/${TARGET}/data/temp1j.csv" "$OUTPUT/${TARGET}/data/temp2j.csv" >>"$OUTPUT/${TARGET}/data/temp_pipeline.csv"
 
-    ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/compress_delta.sql" -r -p "_TABLE_=temp_pipeline" >"$OUTPUT/${TARGET}/data/pipeline_d.csv"
+        ./csvdb.pl -d -v "$OUTPUT/${TARGET}/views/compress_delta.sql" -r -p "_TABLE_=temp_pipeline" >"$OUTPUT/${TARGET}/data/pipeline_d.csv"
 
-    rm "$OUTPUT/${TARGET}"/data/temp*.csv
+        if [[ -f "$OUTPUT/${TARGET}/data/pipeline_d.csv" ]] && [[ ! -s "$OUTPUT/${TARGET}/data/pipeline_d.csv" ]]; then
+            echo "Delta was empty. Copying original dataset.";
+            cp "$OUTPUT/$TARGET/data/pipeline.csv" "$OUTPUT/${TARGET}/data/pipeline_d.csv"
+        fi
+
+        rm "$OUTPUT/${TARGET}"/data/temp*.csv
+    else
+        echo "Old dataset not found. Using new dataset."
+        cp "$OUTPUT/$TARGET/data/pipeline.csv" "$OUTPUT/${TARGET}/data/pipeline_d.csv"
+    fi
 
     #
     # Create Archive
