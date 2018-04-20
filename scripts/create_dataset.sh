@@ -17,15 +17,17 @@ OUTPUT=data
 DATASET1=cloud_consolidated_pipeline
 DATASET2=global_salesprogram_incentive
 
-SOURCE11=data/$INPUT/$DATASET1/data/pipeline_qc.csv
-SOURCE12=data/$INPUT/$DATASET1/data/pipeline_qn.csv
+SOURCE11=data/$INPUT/$DATASET1/data/pipeline_qc_emea.csv
+SOURCE12=data/$INPUT/$DATASET1/data/pipeline_qc_mee.csv
+SOURCE13=data/$INPUT/$DATASET1/data/pipeline_qn_emea.csv
+SOURCE14=data/$INPUT/$DATASET1/data/pipeline_qn_mee.csv
 
-SOURCE21=data/$INPUT/$DATASET2/data/q4_emea.csv
-SOURCE22=data/$INPUT/$DATASET2/data/q1_emea.csv
-SOURCE23=data/$INPUT/$DATASET2/data/q2_emea.csv
-SOURCE24=data/$INPUT/$DATASET2/data/q4_mee.csv
-SOURCE25=data/$INPUT/$DATASET2/data/q1_mee.csv
-SOURCE26=data/$INPUT/$DATASET2/data/q2_mee.csv
+SOURCE21=data/$INPUT/$DATASET2/data/q2_emea.csv
+SOURCE22=data/$INPUT/$DATASET2/data/q3_emea.csv
+SOURCE23=data/$INPUT/$DATASET2/data/q4_emea.csv
+SOURCE24=data/$INPUT/$DATASET2/data/q2_mee.csv
+SOURCE25=data/$INPUT/$DATASET2/data/q3_mee.csv
+SOURCE26=data/$INPUT/$DATASET2/data/q4_mee.csv
 
 #
 # Template Dataset
@@ -53,6 +55,16 @@ fi
 
 if [[ ! -f "$SOURCE12" ]]; then
     echo "$SOURCE12 not found. Exiting."
+    exit 1
+fi
+
+if [[ ! -f "$SOURCE13" ]]; then
+    echo "$SOURCE13 not found. Exiting."
+    exit 1
+fi
+
+if [[ ! -f "$SOURCE14" ]]; then
+    echo "$SOURCE14 not found. Exiting."
     exit 1
 fi
 
@@ -150,6 +162,8 @@ echo ""
 
 cat     "$SOURCE11" >  "data/$INPUT/$DATASET1/data/pipeline.csv"
 tail +2 "$SOURCE12" >> "data/$INPUT/$DATASET1/data/pipeline.csv"
+tail +2 "$SOURCE13" >> "data/$INPUT/$DATASET1/data/pipeline.csv"
+tail +2 "$SOURCE14" >> "data/$INPUT/$DATASET1/data/pipeline.csv"
 
 
 #
