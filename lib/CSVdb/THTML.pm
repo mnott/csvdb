@@ -48,6 +48,7 @@ has data    => ( is => 'rw' );    # data directory
 has name    => ( is => 'rw' );    # Name of the template, ignore for links
 has columns => ( is => 'rw' );    # Column Name => Metadata
 has views   => ( is => 'rw' );    # View   Name => Metadata
+has reports => ( is => 'rw' );    # Report Name => Metadata
 has csvdb   => ( is => 'rw' );    # The CSVdb engine
 has cfg     => ( is => 'rw' );    # The Configuration
 has noclip  => ( is => 'rw' );    # Don't put clipboard actions
@@ -138,6 +139,12 @@ sub BUILD {
     #
     $self->views( $self->read_json("$ENV{ROOT}/data/$dataset/views.json") );
 
+    #
+    # Read the report definitions
+    #
+    $self->reports(
+        $self->read_json("$ENV{ROOT}/data/$dataset/reports.json") );
+
 
     #
     # Parse the parameters
@@ -175,12 +182,26 @@ sub BUILD {
         my $val = $self->req->param($param);
         if ( defined $val ) {
             push @request_params, $param . "=" . $val;
+            $self->ses->set( $param, $val );
+        }
+        else {
+            my $pval = $self->get_param($param);
+            if ( !defined $pval ) {
+                push @request_params, $param . "=";
+                $self->ses->remove($param);
+            }
+            else {
+                push @request_params, $param . "=" . $pval;
+                $self->ses->set( $param, $pval );
+            }
+
         }
     }
 
-    if ($self->get_param( "delta", 0) != 0) {
+    if ( $self->get_param( "delta", 0 ) != 0 ) {
         push @request_params, "_DELTA_=_d";
-    } else {
+    }
+    else {
         push @request_params, "_DELTA_=";
     }
 
@@ -193,6 +214,10 @@ sub BUILD {
 #
 sub read_json {
     my ( $self, $json ) = @_;
+
+    if ( !-e $json ) {
+        return decode_json("[]");
+    }
 
     my $result = $self->cache->get(
         $json,
@@ -296,6 +321,26 @@ Content-type: text/html
         u.query.delta=delta;
         window.location.href=u;
     }
+    function navigate(url, parameter, value, refresh) {
+        if(refresh) {
+            setTimeout(function(){ window.location.reload(); }, 1000);
+        }
+
+        url = updateQueryStringParameter(url, parameter, value);
+
+        window.parent.main.location.href=url;
+    }
+    function updateQueryStringParameter(uri, key, value) {
+        var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+        var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+        if (uri.match(re)) {
+          return uri.replace(re, '$1' + key + "=" + value + '$2');
+        }
+        else {
+          return uri + separator + key + "=" + value;
+        }
+    }
+
 </script>
 </head>
 <body>
@@ -318,17 +363,46 @@ HERE
 HERE
     }
 
-    print <<'HERE';
+    if ( $self->name eq "Countries" ) {
+        if ( defined $self->reports && scalar( @{ $self->reports } ) > 0 ) {
+            print <<'HERE';
 <div align="left">
+<div class="dropdown">
+  <button class="dropbtn">v</button>
+  <div class="dropdown-content">
 HERE
+            for my $i ( 0 .. scalar( @{ $self->reports } ) - 1 ) {
+                my $report_definition = $self->reports->[$i];
+                my $label             = $report_definition->{"label"};
+                my $url               = $report_definition->{"url"};
+                my $parameter         = $report_definition->{"parameter"};
+                my $value             = $report_definition->{"value"};
+                my $refresh           = $report_definition->{"refresh"};
+                my $html
+                    = "<a onclick=\"navigate("
+                    . $url . ",'"
+                    . $parameter . "', '"
+                    . $value . "', "
+                    . $refresh
+                    . ");\" rel=\"noreferrer\">"
+                    . $label . "</a>";
+                print "$html\n";
+            }
+            print <<'HERE';
+  </div>
+</div>
+HERE
+        }
+    }
 
-print "<table ";
+    print "<table ";
 
-if ($self->name ne "Countries") {
-  print "id=\"fulltable\"";
-}
+    if ( $self->name ne "Countries" ) {
+        print "id=\"fulltable\"";
+    }
 
-print " cellpadding=\"5\" cellspacing=\"0\" border=\"0\" bordercolor=\"black\" width=\"100%\">";
+    print
+        " cellpadding=\"5\" cellspacing=\"0\" border=\"0\" bordercolor=\"black\" width=\"100%\">";
 }
 
 
@@ -381,7 +455,9 @@ sub get_param {
 
     if ( !defined $result ) {
         $self->log->debug("+ Value for $param not found. Using $default.");
-        $result = $default;
+        if ( defined $default ) {
+            $result = $default;
+        }
     }
 
     return $result;
@@ -566,16 +642,26 @@ sub print_table_header {
     # Delta: &#8710;
     # All  : &#8704;
     #
-    if($self->get_param( "delta", 0 ) == 0) {
-        print "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(1);\">&#8710;</a></td>";
-    } else {
-        print "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(0);\">&#8704;</a></td>";
+    if ( $self->name ne "Countries" ) {
+        if ( $self->get_param( "delta", 0 ) == 0 ) {
+            print
+                "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(1);\">&#8710;</a></td>";
+        }
+        else {
+            print
+                "<td class=\"r\"><a href=\"#\" class=\"h\" onclick=\"delta(0);\">&#8704;</a></td>";
+        }
+    }
+    else {
+        print "<td class=\"r\">&nbsp;</td>";
     }
 
-    if ($self->noclip) {
+    if ( $self->noclip ) {
         print "<td>&nbsp;</td>";
-    } else {
-        print "<td class=\"clippy\" data-clipboard-target=\"#fulltable\" style=\"top:0px;font-size:11px\">&#128203;</td>\n";
+    }
+    else {
+        print
+            "<td class=\"clippy\" data-clipboard-target=\"#fulltable\" style=\"top:0px;font-size:11px\">&#128203;</td>\n";
     }
 
     foreach my $field (@$fields) {
@@ -619,19 +705,24 @@ sub print_table_header {
             . "\");return false;'"
             : "oncontextmenu='javascript:return false;'";
 
-        print "<td class=\"" . $c . "\" $search_link >";
+        if ( $self->name ne "Countries" ) {
+            print "<td class=\"" . $c . "\" $search_link >";
 
-        print $self->build_url(
-            {   name   => $name,
-                field  => $field,
-                url    => $header_url,
-                target => $header_target,
-                header => $header,
-                css    => "h",
-            }
-        );
+            print $self->build_url(
+                {   name   => $name,
+                    field  => $field,
+                    url    => $header_url,
+                    target => $header_target,
+                    header => $header,
+                    css    => "h",
+                }
+            );
 
-        print "</td>\n";
+            print "</td>\n";
+        }
+        else {
+            print "<td>Countries</td>";
+        }
 
         $column++;
     }
@@ -717,8 +808,11 @@ sub build_url {
     # Shortcut if we don't even have an url
     #
 
-    if ( !defined $url
-        || ( !defined $self->req->param("search") && defined $self->name && defined $name && $name eq $self->name )
+    if (!defined $url
+        || (  !defined $self->req->param("search")
+            && defined $self->name
+            && defined $name
+            && $name eq $self->name )
         )
     {
         if ( defined $header ) {
