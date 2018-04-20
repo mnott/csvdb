@@ -152,6 +152,8 @@ sub describe {
     $description =~ s/_/ /g;
     $description = t_case($description);
 
+    $description =~ s/(^.*?)(\w+)[.!?]?\s*$/$1\U$2/;
+
     return $description;
 }
 
