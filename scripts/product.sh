@@ -21,4 +21,4 @@ fi
 PRODUCT=$1
 shift
 
-./csvdb.pl -dir ./data/$DATASET/data -v ./data/$DATASET/views/product.sql -p PRODUCT="$PRODUCT" $@
+./csvdb.pl -dir ./data/$DATASET/data -v ./data/$DATASET/views/product.sql -p PRODUCT="$PRODUCT" -p _DELTA_="" $@
