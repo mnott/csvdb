@@ -12,3 +12,6 @@ tmp/
 
 # Don't share the vagrant metadirectory
 .vagrant
+
+# Don't share "*ori*" style files
+*ori*
