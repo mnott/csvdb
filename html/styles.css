@@ -141,7 +141,7 @@ tr.h td {
     display: none;
     position: absolute;
     background-color: #f1f1f1;
-    min-width: 160px;
+    min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 10;
 }
@@ -153,7 +153,10 @@ tr.h td {
     display: block;
 }
 
-.dropdown-content a:hover {background-color: #ddd}
+.dropdown-content a:hover {
+  background: #ADD8E6;
+  color: #265301;
+}
 
 .dropdown:hover .dropdown-content {
     display: block;
@@ -162,3 +165,15 @@ tr.h td {
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
+
+.dropdown-content span {
+    background: #4682B4;
+    color: #FFFFFF;
+    display: none;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: bold;
+    border-bottom: 1px solid;
+}
+

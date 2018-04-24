@@ -48,6 +48,7 @@ has data    => ( is => 'rw' );    # data directory
 has name    => ( is => 'rw' );    # Name of the template, ignore for links
 has columns => ( is => 'rw' );    # Column Name => Metadata
 has views   => ( is => 'rw' );    # View   Name => Metadata
+has filters => ( is => 'rw' );    # Filter Name => Metadata
 has reports => ( is => 'rw' );    # Report Name => Metadata
 has csvdb   => ( is => 'rw' );    # The CSVdb engine
 has cfg     => ( is => 'rw' );    # The Configuration
@@ -140,11 +141,16 @@ sub BUILD {
     $self->views( $self->read_json("$ENV{ROOT}/data/$dataset/views.json") );
 
     #
+    # Read the filter definitions
+    #
+    $self->filters(
+        $self->read_json("$ENV{ROOT}/data/$dataset/filters.json") );
+
+    #
     # Read the report definitions
     #
     $self->reports(
         $self->read_json("$ENV{ROOT}/data/$dataset/reports.json") );
-
 
     #
     # Parse the parameters
@@ -364,30 +370,58 @@ HERE
     }
 
     if ( $self->name eq "Countries" ) {
-        if ( defined $self->reports && scalar( @{ $self->reports } ) > 0 ) {
+        if (   ( defined $self->filters && scalar( @{ $self->filters } ) > 0 )
+            || ( defined $self->reports && scalar( @{ $self->reports } ) > 0 )
+            )
+        {
             print <<'HERE';
 <div align="left">
 <div class="dropdown">
   <button class="dropbtn">v</button>
   <div class="dropdown-content">
 HERE
-            for my $i ( 0 .. scalar( @{ $self->reports } ) - 1 ) {
-                my $report_definition = $self->reports->[$i];
-                my $label             = $report_definition->{"label"};
-                my $url               = $report_definition->{"url"};
-                my $parameter         = $report_definition->{"parameter"};
-                my $value             = $report_definition->{"value"};
-                my $refresh           = $report_definition->{"refresh"};
-                my $html
-                    = "<a onclick=\"navigate("
-                    . $url . ",'"
-                    . $parameter . "', '"
-                    . $value . "', "
-                    . $refresh
-                    . ");\" rel=\"noreferrer\">"
-                    . $label . "</a>";
-                print "$html\n";
+
+            if ( defined $self->filters && scalar( @{ $self->filters } ) > 0 )
+            {
+                print "<span>Filters</span>\n";
+                for my $i ( 0 .. scalar( @{ $self->filters } ) - 1 ) {
+                    my $filter_definition = $self->filters->[$i];
+                    my $label             = $filter_definition->{"label"};
+                    my $url               = $filter_definition->{"url"};
+                    my $parameter         = $filter_definition->{"parameter"};
+                    my $value             = $filter_definition->{"value"};
+                    my $refresh           = $filter_definition->{"refresh"};
+                    my $html
+                        = "<a onclick=\"navigate("
+                        . $url . ",'"
+                        . $parameter . "', '"
+                        . $value . "', "
+                        . $refresh
+                        . ");\" rel=\"noreferrer\">"
+                        . $label . "</a>";
+                    print "$html\n";
+                }
             }
+
+            if ( defined $self->reports && scalar( @{ $self->reports } ) > 0 )
+            {
+                print "<span>Reports</span>\n";
+                for my $i ( 0 .. scalar( @{ $self->reports } ) - 1 ) {
+                    my $report_definition = $self->reports->[$i];
+                    my $label             = $report_definition->{"label"};
+                    my $url               = $report_definition->{"url"};
+                    my $target            = $report_definition->{"target"};
+                    my $html
+                        = "<a href=\""
+                        . $url
+                        . "\" target=\""
+                        . $target
+                        . "\" rel=\"noreferrer\">"
+                        . $label . "</a>";
+                    print "$html\n";
+                }
+            }
+
             print <<'HERE';
   </div>
 </div>
@@ -454,7 +488,7 @@ sub get_param {
     }
 
     if ( !defined $result ) {
-        if (!defined $default) {
+        if ( !defined $default ) {
             $default = "";
         }
         $self->log->debug("+ Value for $param not found. Using $default.");
