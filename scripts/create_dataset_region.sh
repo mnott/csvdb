@@ -101,7 +101,7 @@ create_dataset() {
     #
     # Remember old Dataset
     #
-    for i in $(ls -latrd1 $OUTPUT/20*$REGION | head -1); do export OLDDATA=data/$(basename "$i")/data; done
+    for i in $(ls -latrd1 $OUTPUT/20*$REGION | tail -1); do export OLDDATA=data/$(basename "$i")/data; done
 
     cp -av "data/$INPUT/$SOURCE" "$OUTPUT/$TARGET"
 
@@ -204,7 +204,7 @@ create_dataset() {
     #
     echo ""
     echo ""
-    echo Creating Delta Database
+    echo Creating Delta Database: $TARGET vs. previous data: $OLDDATA
     echo ""
     export DATASET=${TARGET}
 
