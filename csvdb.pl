@@ -439,6 +439,9 @@ yet got):
  2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
  3. Install [Git](https://git-scm.com/download)
 
+When you download VirtualBox, don't forget to also download the
+extension pack (on the same page).
+
 Very important: If you are working on a Windows system, make sure
 to configure Git, when it installs, to *not automatically* convert
 Line Ends ("CR/LF"). Shouly you have configured it wrongly, you can
