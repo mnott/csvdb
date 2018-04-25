@@ -3,6 +3,7 @@
 if [ `uname -s` == Linux ]; then
   sudo apt-get install -y perl-doc
   sudo apt-get install -y libxml2-dev
+  sudo apt-get install -y zlib1g-dev
   sudo apt-get install -y memcached
   sudo apt-get install -y libcache-memcached-perl
   sudo sed -i 's/^-m 64/-m 128/' /etc/memcached.conf
