@@ -22,9 +22,12 @@ Licensed under WTFPL.
 
 ./csvdb.pl \[options\]
 
-csvdb interprets all .csv files in the data directory as tables.
+csvdb interprets all .csv files in the current directory as tables.
 
-You can specify the data directory on the command line like so:
+You can of course have the whole git repository somewhere else and
+have its csvdb.pl on the path.
+
+You can specify a data directory on the command line like so:
 
     ./csvdb.pl -d data/xyz/data/ -s "select id, name from employee"
 
@@ -32,7 +35,8 @@ This tells the program to look for employee.csv within the directory
 data/xyz/data.
 
 Alternatively, you can also specify the xyz directory using an
-environment variable:
+environment variable DATASET, which will make the data directory
+to default to, if DATASET is xyz, data/xyz/data:
 
     export DATASET=xyz
     ./csvdb.pl -s "select id, name from employee"
@@ -45,7 +49,7 @@ So if, for example, you do only this:
 
     ./csvdb.pl -s "select distinct id, name from employee order by name"
 
-Then this expects to find a file employee.csv (in the data//data directory,
+Then this expects to find a file employee.csv (in the current directory,
 because a dataset directory was not defined), with at least a header
 line containing something like id, name, which are going to be the
 column headers.
@@ -310,31 +314,4 @@ is an excellent frontend about it:
 
 \[Vagrant Manager\](http://vagrantmanager.com)
 
-It is highly recommendable to use Vagrant Manager. For Windows, we have
-found that for current versions of Vagrant, you need to use Version 1.0.0.7:
-
-\[Vagrant Manager 1.0.0.7 for Windows\](https://github.com/deveres/vagrant-manager-windows/releases/download/1.0.0.7/vagrant-manager-windows-1.0.0.7.exe)
-
-
-# Proxy Settings
-
-If Git does not work because of a proxy, you will need Git to use your proxy.
-
-Do this in a command line:
-
-  git config --global http.proxy http://proxy:8083
-  git config --global https.proxy http://proxy:8083
-
-If you have problems with your proxy settings, you can unset them as follows:
-
-  git config --global --unset http.proxy
-  git config --global --unset https.proxy
-
-If Vagrant does not work because of your proxy, please review the proxy
-settings in Vagrantfile (optionally comment them out). Also, you'll need
-to install the vagrant proxy plugin:
-
-  vagrant plugin install vagrant-proxyconf
-
-
-
+It is highly recommendable to use Vagrant Manager.

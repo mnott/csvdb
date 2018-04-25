@@ -149,9 +149,12 @@ __END__
 
 ./csvdb.pl [options]
 
-csvdb interprets all .csv files in the data directory as tables.
+csvdb interprets all .csv files in the current directory as tables.
 
-You can specify the data directory on the command line like so:
+You can of course have the whole git repository somewhere else and
+have its csvdb.pl on the path.
+
+You can specify a data directory on the command line like so:
 
   ./csvdb.pl -d data/xyz/data/ -s "select id, name from employee"
 
@@ -159,7 +162,8 @@ This tells the program to look for employee.csv within the directory
 data/xyz/data.
 
 Alternatively, you can also specify the xyz directory using an
-environment variable:
+environment variable DATASET, which will make the data directory
+to default to, if DATASET is xyz, data/xyz/data:
 
   export DATASET=xyz
   ./csvdb.pl -s "select id, name from employee"
@@ -172,7 +176,7 @@ So if, for example, you do only this:
 
   ./csvdb.pl -s "select distinct id, name from employee order by name"
 
-Then this expects to find a file employee.csv (in the data//data directory,
+Then this expects to find a file employee.csv (in the current directory,
 because a dataset directory was not defined), with at least a header
 line containing something like id, name, which are going to be the
 column headers.
