@@ -44,8 +44,17 @@ use File::Basename qw(dirname);
 use Cwd qw(abs_path);
 use Data::Dump "pp";
 
+###################################################
+#
+# Relative Library Directory Lookup
+#
+###################################################
+
+use lib dirname( Cwd::abs_path $0) . '/lib';
+
 use CSVdb::TConfig;
 use CSVdb;
+
 
 $ENV{ROOT} = dirname( abs_path $0);
 
