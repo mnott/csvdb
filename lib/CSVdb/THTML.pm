@@ -73,6 +73,20 @@ has positions => (
 
 
 #
+# Holds the column sums, the column name as a key,
+# colum sum as value - for those columns that have
+# a sum
+#
+has sums => (
+    is      => 'rw',
+    traits  => ['Hash'],
+    isa     => 'HashRef',
+    lazy    => 0,
+    default => sub { {} },
+);
+
+
+#
 # Constructor
 #
 sub BUILD {
@@ -461,8 +475,28 @@ sub end_html {
     clipboard.on('error', function(e) {
         console.log(e);
     });
-    </script>
 
+HERE
+
+    my $sums = $self->sums;
+
+    foreach my $sum ( keys %{$sums} ) {
+    	my $value = $sums->{$sum};
+    	$value = reverse join ".", (reverse $value) =~ /(\d{1,3})/g;
+
+        print "    // Column Header " . $sum . "=" . $value . "\n";
+        print "    var span = document.getElementById('$sum');\n";
+        print "    while(span.firstChild) {\n";
+        print "      span.removeChild(span.firstChild);\n";
+        print "    }\n";
+        print "    span.appendChild(document.createTextNode('";
+        print $value;
+        print "'));\n\n";
+    }
+
+    print <<'HERE';
+
+    </script>
 </body>
 <html>
 HERE
@@ -664,6 +698,17 @@ sub register_column {
     }
 }
 
+sub sum_column {
+    my ( $self, $column_name, $add_to ) = @_;
+
+    my $sum = $self->sums->{ uc($column_name) };
+    if ( !defined $sum ) {
+        $sum = 0;
+    }
+    $sum += $add_to;
+    $self->sums->{ uc($column_name) } = $sum;
+}
+
 
 #
 # Print the table header
@@ -712,6 +757,7 @@ sub print_table_header {
         my $name;
         my $align;
         my $header;
+        my $sum;
         my $url;
         my $search_url;
         my $header_url;
@@ -725,6 +771,11 @@ sub print_table_header {
             $search_url    = $column_definition->{"search_url"};
             $header_url    = $column_definition->{"header_url"};
             $header_target = $column_definition->{"header_target"};
+
+            $sum = $column_definition->{"sum"};
+            if ( defined $sum && $sum eq "true" ) {
+                $self->sum_column( $header, 0 );
+            }
         }
 
         my $c
@@ -751,6 +802,7 @@ sub print_table_header {
                     url    => $header_url,
                     target => $header_target,
                     header => $header,
+                    sum    => $sum,
                     css    => "h",
                 }
             );
@@ -796,6 +848,11 @@ sub print_table_line {
             $target = $column_definition->{"target"};
             $url    = $column_definition->{"url"};
             $name   = $column_definition->{"name"};
+
+            my $sum = $column_definition->{"sum"};
+            if ( defined $sum && $sum eq "true" ) {
+                $self->sum_column( $name, $field );
+            }
         }
 
         my $c
@@ -834,6 +891,7 @@ sub build_url {
     my $target = $args->{target};
     my $field  = $args->{field};
     my $header = $args->{header};
+    my $sum    = $args->{sum};
     my $css    = $args->{css};
 
     my $result = "";
@@ -900,7 +958,12 @@ sub build_url {
     $result .= ">";
 
     if ( defined $header ) {
-        $result .= $header;
+        if ( defined $sum && $sum eq "true" ) {
+            $result .= "<span id=\"$header\" title=\"$header\">" . $header . "</span>";
+        }
+        else {
+            $result .= $header;
+        }
     }
     else {
         $result .= $field;
