@@ -346,6 +346,8 @@ sub tbl_select {
 
     $sql = $self->parse_sql($sql);
 
+    $self->log->debug("SQL: $sql\n");
+
     if ( $self->cfg->get("debug") ) {
         print STDERR "\n$sql\n\n";
     }
@@ -480,8 +482,11 @@ sub parse_sql {
         foreach my $key ( keys %$params ) {
             my $val = %{ $self->cfg->get("params") }{$key};
             if ( defined $val ) {
-                $val =~ s/'/%/g;
+                if ($key ne "_WHERE_") {
+                    $val =~ s/'/%/g;
+                }
                 $sql =~ s/$key/$val/g;
+                $self->log->debug("+ Parameter $key=$val");
             }
         }
     }
