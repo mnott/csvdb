@@ -117,8 +117,18 @@ sub run {
     # Set default values
     #
     $self->cfg->set( "debug", 0 ) if !defined $self->cfg->get("debug");
-    $self->cfg->set( "dir", "./data/$ENV{DATASET}/data" )
-        if !defined $self->cfg->get("dir");
+
+    my $dir = $self->cfg->get("dir");
+
+    if ( !defined $dir ) {
+        if ( defined $ENV{DATASET} && $ENV{DATASET} ne "" ) {
+            $self->cfg->set( "dir", "./data/$ENV{DATASET}/data" );
+        }
+        else {
+            $self->cfg->set( "dir", "." );
+        }
+    }
+
     $self->cfg->set( "cols", "" ) if !defined $self->cfg->get("cols");
     $self->cfg->set( "kols", "" ) if !defined $self->cfg->get("kols");
     $self->cfg->set( "sql",  "" ) if !defined $self->cfg->get("sql");
@@ -482,7 +492,7 @@ sub parse_sql {
         foreach my $key ( keys %$params ) {
             my $val = %{ $self->cfg->get("params") }{$key};
             if ( defined $val ) {
-                if ($key ne "_WHERE_") {
+                if ( $key ne "_WHERE_" ) {
                     $val =~ s/'/%/g;
                 }
                 $sql =~ s/$key/$val/g;
@@ -549,7 +559,7 @@ sub rnd {
 sub trim_oppi {
     my ( $self, $sth, $oppi ) = @_;
 
-    $oppi =~ s/^0*//;         # remove leading 0s
+    $oppi =~ s/^0*//;        # remove leading 0s
 
     return $oppi;
 }
