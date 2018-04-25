@@ -261,6 +261,36 @@ those modules, if you are on a Linux or MacOS system, using
 the script **install/src/configure/configure\_perl.sh**. This
 will attempt to install the modules for you.
 
+Here is a walkthrough of the installation under Ubuntu:
+
+    root[14:48:58]@ltest:~# export LANG=C
+    root[14:49:03]@ltest:~# apt-get install -y git
+    Reading package lists... Done
+    Building dependency tree
+    Reading state information... Done
+    git is already the newest version (1:2.7.4-0ubuntu1.3).
+    0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+    root[14:49:09]@ltest:~# cd /usr/local/bin
+    root[14:49:20]@ltest:/usr/local/bin# git clone https://github.com/mnott/csvdb csvdb-bin
+    Cloning into 'csvdb-bin'...
+    remote: Counting objects: 440, done.
+    remote: Compressing objects: 100% (60/60), done.
+    remote: Total 440 (delta 45), reused 79 (delta 36), pack-reused 344
+    Receiving objects: 100% (440/440), 133.57 KiB | 0 bytes/s, done.
+    Resolving deltas: 100% (228/228), done.
+    Checking connectivity... done.
+    root[14:49:33]@ltest:/usr/local/bin#
+    root[14:49:33]@ltest:/usr/local/bin# ln -s csvdb-bin/csvdb.pl csvdb
+    root[14:49:33]@ltest:/usr/local/bin# cd csvdb/install/src/configure
+    root[14:52:06]@ltest:/usr/local/bin/csvdb/install/src/configure# ./configure_perl.sh
+    root[15:12:45]@ltest:/usr/local/bin/csvdb/install/src/configure# cd /tmp
+    root[15:12:47]@ltest:/tmp# echo "a,b" >test.csv
+    root[15:12:57]@ltest:/tmp# echo 1,2>>test.csv
+    root[15:13:02]@ltest:/tmp# echo 3,4>>test.csv
+    root[15:13:06]@ltest:/tmp# csvdb -s "select a, b from test where a=3"
+    a b
+    3 4
+
 Alternatively, if you do not want to mess with your local
 installation, you can install the whole package as to run
 inside a virtual machine (only install what you have not
