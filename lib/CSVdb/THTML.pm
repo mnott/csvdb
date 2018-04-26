@@ -832,6 +832,7 @@ sub print_table_header {
             print $self->build_url(
                 {   name   => $name,
                     field  => $field,
+                    text   => $field,
                     url    => $header_url,
                     target => $header_target,
                     header => $header,
@@ -874,12 +875,14 @@ sub print_table_line {
         my $align;
         my $target;
         my $url;
+        my $url2;
         my $name;
 
         if ( defined $column_definition ) {
             $align  = $column_definition->{"align"};
             $target = $column_definition->{"target"};
             $url    = $column_definition->{"url"};
+            $url2   = $column_definition->{"url2"};
             $name   = $column_definition->{"name"};
 
             my $sum = $column_definition->{"sum"};
@@ -895,19 +898,48 @@ sub print_table_line {
 
         print "<td class=\"" . $c . "\">";
 
+        my @fields = ($field);
+
+        if ( defined $url && defined $url2 ) {
+            my $strl = length($field);
+
+            my $lpart = substr( $field, 0, $strl / 2 );
+            my $rpart = substr( $field, length($lpart) );
+
+            $fields[0] = $lpart;
+            $fields[1] = $rpart;
+        }
+        else {
+            $fields[0] = $field;
+        }
+
         if ( defined $url ) {
             print $self->build_url(
                 {   name   => $name,
                     field  => $field,
+                    text   => $fields[0],
                     url    => $url,
                     target => $target
                 }
             );
-        }
-        else {
-            print $field;
-        }
 
+            if ( $#fields > 0 ) {
+                if ( defined $url ) {
+                    print $self->build_url(
+                        {   name   => $name,
+                            field  => $field,
+                            text   => $fields[1],
+                            url    => $url2,
+                            target => $target
+                        }
+                    );
+                }
+                else {
+                    print $fields[1];
+                }
+            }
+        }
+        else { print $field; }
         print "</td>\n";
 
         $column++;
@@ -923,6 +955,7 @@ sub build_url {
     my $url    = $args->{url};
     my $target = $args->{target};
     my $field  = $args->{field};
+    my $text   = $args->{text};
     my $header = $args->{header};
     my $sum    = $args->{sum};
     my $css    = $args->{css};
@@ -1002,7 +1035,7 @@ sub build_url {
         }
     }
     else {
-        $result .= $field;
+        $result .= $text;
     }
 
     $result .= "</a>";
