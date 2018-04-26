@@ -381,7 +381,7 @@ HERE
     # find the dataset, so we just issue a refresh
     #
     if ( !defined $self->name ) {
-        $self->ses->set("dataset", "");
+        $self->ses->set( "dataset", "" );
         $self->cache->flush();
         my $dataset = $self->get_param( "dataset", "" );
         print <<'HERE';
@@ -453,12 +453,17 @@ HERE
                     my $label             = $report_definition->{"label"};
                     my $url               = $report_definition->{"url"};
                     my $target            = $report_definition->{"target"};
+                    my $description = $report_definition->{"description"};
+                    if ( !defined $description ) {
+                        $description = "";
+                    }
                     my $html
                         = "<a href=\""
                         . $url
                         . "\" target=\""
                         . $target
-                        . "\" rel=\"noreferrer\">"
+                        . "\" rel=\"noreferrer\" title=\""
+                        . $description . "\">"
                         . $label . "</a>";
                     print "$html\n";
                 }
