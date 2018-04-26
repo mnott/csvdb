@@ -154,6 +154,16 @@ sub BUILD {
     #
     $self->views( $self->read_json("$ENV{ROOT}/data/$dataset/views.json") );
 
+
+    #
+    # Early exit if we cannot read the views
+    #
+    if ( ref $self->views ne 'HASH' ) {
+        $self->log->error("Dataset $dataset not found.");
+        return;
+    }
+
+
     #
     # Read the filter definitions
     #
@@ -367,9 +377,27 @@ Content-type: text/html
 HERE
 
     #
+    # Hack: if we do not have $self->name, we probably did not
+    # find the dataset, so we just issue a refresh
+    #
+    if ( !defined $self->name ) {
+        $self->ses->set("dataset", "");
+        $self->cache->flush();
+        my $dataset = $self->get_param( "dataset", "" );
+        print <<'HERE';
+    <script>
+        var url = window.parent.parent.location.href;
+        url = updateQueryStringParameter(url, "dataset", "");
+        window.parent.parent.location.href = url;
+    </script>
+
+HERE
+    }
+
+    #
     # Optionally, output the dataset selection
     #
-    if ( $self->name eq "Countries" ) {
+    if ( defined $self->name && $self->name eq "Countries" ) {
         print <<'HERE';
 <iframe
    id="datasets"
@@ -383,7 +411,7 @@ HERE
 HERE
     }
 
-    if ( $self->name eq "Countries" ) {
+    if ( defined $self->name && $self->name eq "Countries" ) {
         if (   ( defined $self->filters && scalar( @{ $self->filters } ) > 0 )
             || ( defined $self->reports && scalar( @{ $self->reports } ) > 0 )
             )
@@ -445,7 +473,7 @@ HERE
 
     print "<table ";
 
-    if ( $self->name ne "Countries" ) {
+    if ( defined $self->name && $self->name ne "Countries" ) {
         print "id=\"fulltable\"";
     }
 
@@ -481,8 +509,8 @@ HERE
     my $sums = $self->sums;
 
     foreach my $sum ( keys %{$sums} ) {
-    	my $value = $sums->{$sum};
-    	$value = reverse join ".", (reverse $value) =~ /(\d{1,3})/g;
+        my $value = $sums->{$sum};
+        $value = reverse join ".", ( reverse $value ) =~ /(\d{1,3})/g;
 
         print "    // Column Header " . $sum . "=" . $value . "\n";
         print "    var span = document.getElementById('$sum');\n";
@@ -665,7 +693,7 @@ sub parse_params {
 sub get_column_definition_by_name {
     my ( $self, $column_name ) = @_;
 
-    if ( defined $self->columns ) {
+    if ( defined $self->columns && ref $self->columns eq 'HASH' ) {
         my %column_definitions = %{ $self->columns };
         my $column_definition  = $column_definitions{"$column_name"};
         if ( defined $column_definition ) {
@@ -959,7 +987,10 @@ sub build_url {
 
     if ( defined $header ) {
         if ( defined $sum && $sum eq "true" ) {
-            $result .= "<span id=\"$header\" title=\"$header\">" . $header . "</span>";
+            $result
+                .= "<span id=\"$header\" title=\"$header\">"
+                . $header
+                . "</span>";
         }
         else {
             $result .= $header;

@@ -110,15 +110,21 @@ sub BUILD {
     # If we don't have it in the request, try to find it
     # in the session
     #
-    if ( !defined $dataset ) {
-        $dataset = $self->ses->get("dataset");
+    if ( !defined $dataset || $dataset eq "" ) {
+        $self->log->debug("+ Did not find the dataset in the request.");
+        if (defined $dataset && $dataset eq "") {
+            $self->ses->set("dataset", "");
+        } else {
+            $dataset = $self->ses->get("dataset");
+        }
     }
 
     #
     # If we don't have it in the session, choose the
     # first one we had read from disk (or cache).
     #
-    if ( !defined $dataset ) {
+    if ( !defined $dataset || $dataset eq "" ) {
+        $self->log->debug("+ Did not find the dataset in the session.");
         $dataset = $datasets->[0];
         $self->ses->set( "dataset", $dataset );
     }
