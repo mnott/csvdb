@@ -326,10 +326,11 @@ sub start_html {
     my ($self) = @_;
 
     print <<'HERE';
-Content-type: text/html
+Content-Type:text/html; charset=UTF-8
 
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" type="text/css" href="styles.css" />
 <script src="clipboard.min.js"></script>
 <script src="url.min.js"></script>
