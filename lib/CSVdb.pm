@@ -547,7 +547,7 @@ package main;
 sub rnd {
     my ( $self, $sth, $n ) = @_;
 
-    $n =~ s/,//;    # remove thousands comma
+    $n =~ s/,//g;    # remove thousands comma
                     #$n += 0.05;            # want to round up (as number)
                     #$n =~ s/\.(\d).*/.$1/; # perform the rounding (as string)
 
