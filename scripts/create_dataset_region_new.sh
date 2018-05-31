@@ -162,8 +162,6 @@ create_dataset() {
     ./csvdb.pl -d -v "data/$INPUT/$DATASET1/views/extract.sql" -h -r >>"$OUTPUT/$TARGET/data/temp.csv"
 
 
-
-
     #
     # Remove Duplicates
     #
@@ -233,7 +231,7 @@ create_dataset() {
     (
       cd "$OUTPUT"
 
-      zip -ver "$TARGET.zip" "$TARGET"
+      zip -P $PW -vr "$TARGET.zip" "$TARGET"
     )
 
     #
@@ -260,6 +258,7 @@ export OUTPUT=data
 # Timestamp
 #
 export TS=`date +"%Y-%m-%d"`
+export PW=`date +"%m%d"`
 
 
 if [[ $# -lt 1 ]]; then
