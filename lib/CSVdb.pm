@@ -255,6 +255,7 @@ sub dbi_connect {
     $dbh->do('CREATE FUNCTION rnd EXTERNAL');
     $dbh->do('CREATE FUNCTION trim_oppi EXTERNAL');
     $dbh->do('CREATE FUNCTION intl_date EXTERNAL');
+    $dbh->do('CREATE FUNCTION fc_cat EXTERNAL');
 
     $self->cfg->set( "dbh", $dbh );
 
@@ -547,7 +548,7 @@ package main;
 sub rnd {
     my ( $self, $sth, $n ) = @_;
 
-    $n =~ s/,//g;    # remove thousands comma
+    $n =~ s/,//g;   # remove thousands comma
                     #$n += 0.05;            # want to round up (as number)
                     #$n =~ s/\.(\d).*/.$1/; # perform the rounding (as string)
 
@@ -572,5 +573,24 @@ sub intl_date {
     }
     return $date;
 }
+
+sub fc_cat {
+    my ( $self, $sth, $cat ) = @_;
+
+    if ( $cat eq "Estimated In" ) {
+        $cat = "A - $cat";
+    }
+    elsif ( $cat eq "Committed" ) {
+        $cat = "B - $cat";
+    }
+    elsif ( $cat eq "Probable" ) {
+        $cat = "C - $cat";
+    }
+    elsif ( $cat eq "Upside" ) {
+        $cat = "D - $cat";
+    }
+    return $cat;
+}
+
 
 1;
