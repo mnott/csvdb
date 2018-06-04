@@ -462,7 +462,16 @@ do this on the command line:
 
   git config --global core.autocrlf false
 
-Also, before continuing, make sure that you have switched on
+Also, if you are using a proxy, you would want to set the proxy for git.
+For example:
+
+  git config --global http.proxy proxy.wdf.sap.corp:8080
+
+To remove a proxy configuration, you might do:
+
+  git config --unset --global http.proxy
+
+Then, before continuing, make sure that you have switched on
 Virtualization in your BIOS (the feature is often under either
 Configuration or Security, and is often called Intel Virtualization
 Technology and VT-d Feature: Enable both). If you fail to do this,

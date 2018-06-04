@@ -296,21 +296,9 @@ installation, you can install the whole package as to run
 inside a virtual machine (only install what you have not
 yet got):
 
-1\. Install \[VirtualBox\](https://www.virtualbox.org/wiki/Downloads)
-
-2\. Install \[Vagrant\](https://www.vagrantup.com/downloads.html)
-
-3\. Install \[Git\](https://git-scm.com/download)
-
-4\. Install \[Vagrant Manager\](https://github.com/deveres/vagrant-manager-windows/releases/download/1.0.0.7/vagrant-manager-windows-1.0.0.7.exe)
-
-If you don't want to deal with Vagrant via the command line, there
-is an excellent frontend about it. The link above for
-Vagrant Manager is a special version for Windows
-that has resolved an issue where Vagrant Manager would get stuck on
-refreshing the list of virtual machines. If you run on Mac or others,
-you can download the default version: \[Vagrant Manager\](http://vagrantmanager.com)
-It is highly recommendable to use Vagrant Manager.
+    1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+    2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+    3. Install [Git](https://git-scm.com/download)
 
 When you download VirtualBox, don't forget to also download the
 extension pack (on the same page).
@@ -353,3 +341,10 @@ You can stop the virtual machine using, from the csvdb directory,
 You can delete the virtual machine using, from the csvdb directory,
 
     vagrant destroy
+
+If you don't want to deal with Vagrant via the command line, there
+is an excellent frontend about it:
+
+\[Vagrant Manager\](http://vagrantmanager.com)
+
+It is highly recommendable to use Vagrant Manager.
