@@ -577,7 +577,7 @@ sub intl_date {
 sub fc_cat {
     my ( $self, $sth, $cat ) = @_;
 
-    if ( $cat eq "Estimated In" ) {
+    if ( $cat eq "Estimated In"  || $cat eq "Booked/ Won" ) {
         $cat = "A - $cat";
     }
     elsif ( $cat eq "Committed" ) {
