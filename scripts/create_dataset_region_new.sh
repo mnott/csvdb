@@ -258,7 +258,7 @@ export OUTPUT=data
 # Timestamp
 #
 export TS=`date +"%Y-%m-%d"`
-export PW=`date +"%m%d"`
+export PW=sap`date +"%m%d"`
 
 
 if [[ $# -lt 1 ]]; then
