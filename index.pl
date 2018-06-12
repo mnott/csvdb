@@ -43,6 +43,8 @@ my $debug   = $req->param("debug");
 
 my $delta   = $req->param("delta");
 
+my $diroppy = $req->param("oppi");
+
 if(! defined $delta || $delta eq "") {
   $delta = 0;
 }
@@ -77,7 +79,15 @@ Content-type: text/html
 
   <frameset cols = "10%,80%" frameborder="0">
     <frame name = "countries" src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=countries" />
-    <frame name = "main"      src = "html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=country&country=Spain" />
+EOF
+
+    if (defined $diroppy) {
+      print "<frame name = \"main\"      src = \"html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=oppi&oppi=" . $diroppy . "&search=1\" />";
+    } else {
+      print "<frame name = \"main\"      src = \"html/view.pl?debug=$debug&delta=$delta&dataset=$dataset&view=country&country=Spain\" />";
+    }
+
+    print <<EOF;
     <noframes>
       <body>Your browser does not support frames.</body>
     </noframes>
