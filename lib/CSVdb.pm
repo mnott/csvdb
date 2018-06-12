@@ -589,6 +589,9 @@ sub fc_cat {
     elsif ( $cat eq "Upside" ) {
         $cat = "D - $cat";
     }
+    elsif ( $cat eq "Excluded from Pipeline" ) {
+        $cat = "E - $cat";
+    }
     return $cat;
 }
 
