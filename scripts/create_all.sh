@@ -1,3 +1,3 @@
 #!/bin/bash
 
-for i in mee emean emeas; do scripts/create_dataset_region_new.sh $i; done
+for i in la na gc apj mee emean emeas; do scripts/create_dataset_region_new.sh $i; done
