@@ -38,6 +38,8 @@ use Tie::IxHash;
 use DBI;
 use File::BOM;
 
+use DateTime::Format::Strptime;
+
 use Cwd qw(abs_path);
 
 use Moose;
@@ -256,6 +258,7 @@ sub dbi_connect {
     $dbh->do('CREATE FUNCTION trim_oppi EXTERNAL');
     $dbh->do('CREATE FUNCTION intl_date EXTERNAL');
     $dbh->do('CREATE FUNCTION fc_cat EXTERNAL');
+    $dbh->do('CREATE FUNCTION age_days EXTERNAL');
 
     $self->cfg->set( "dbh", $dbh );
 
@@ -593,6 +596,23 @@ sub fc_cat {
         $cat = "E - $cat";
     }
     return $cat;
+}
+
+sub age_days {
+    my ( $self, $sth, $datestr ) = @_;
+
+    my $parser = DateTime::Format::Strptime->new( pattern => '%Y-%m-%d' );
+    my $dt = $parser->parse_datetime( $datestr );
+
+    my $dt_days =  ( $dt->local_rd_values() )[0];
+
+    my $now = DateTime->now;
+
+    my $now_days = ( $now->local_rd_values() )[0];
+
+    my $duration = $now_days - $dt_days;
+
+    return $duration;
 }
 
 
