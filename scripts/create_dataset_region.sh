@@ -11,14 +11,12 @@ create_dataset() {
     # Definitions
     #
     DATASET1=cloud_consolidated_pipeline
-    DATASET2=global_salesprogram_incentive
+    DATASET2=global_pipeline
     DATASET3=services
 
     SOURCE11=data/$INPUT/$DATASET1/data/cloud_consolidated_pipeline_$REGION.csv
 
-    SOURCE21=data/$INPUT/$DATASET2/data/global_salesprogram_q2_$REGION.csv
-    SOURCE22=data/$INPUT/$DATASET2/data/global_salesprogram_q3_$REGION.csv
-    SOURCE23=data/$INPUT/$DATASET2/data/global_salesprogram_q4_$REGION.csv
+    SOURCE21=data/$INPUT/$DATASET2/data/global_pipeline_$REGION.csv
 
     SOURCE31=data/$INPUT/$DATASET3/data/services_$REGION.csv
 
@@ -52,16 +50,6 @@ create_dataset() {
 
     if [[ ! -f "$SOURCE21" ]]; then
         echo "$SOURCE21 not found. Exiting."
-        exit 1
-    fi
-
-    if [[ ! -f "$SOURCE22" ]]; then
-        echo "$SOURCE22 not found. Exiting."
-        exit 1
-    fi
-
-    if [[ ! -f "$SOURCE23" ]]; then
-        echo "$SOURCE23 not found. Exiting."
         exit 1
     fi
 
@@ -114,8 +102,6 @@ create_dataset() {
     echo ""
 
     cat     "$SOURCE21" >  "data/$INPUT/$DATASET2/data/pipeline.csv"
-    tail +2 "$SOURCE22" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
-    tail +2 "$SOURCE23" >> "data/$INPUT/$DATASET2/data/pipeline.csv"
 
 
     #
@@ -174,8 +160,6 @@ create_dataset() {
 
     export DATASET="$INPUT/$DATASET1"
     ./csvdb.pl -d -v "data/$INPUT/$DATASET1/views/extract.sql" -h -r >>"$OUTPUT/$TARGET/data/temp.csv"
-
-
 
 
     #
@@ -247,7 +231,7 @@ create_dataset() {
     (
       cd "$OUTPUT"
 
-      zip -ver "$TARGET.zip" "$TARGET"
+      zip -P $PW -vr "$TARGET.zip" "$TARGET"
     )
 
     #
@@ -274,14 +258,22 @@ export OUTPUT=data
 # Timestamp
 #
 export TS=`date +"%Y-%m-%d"`
+export PW=sap`date +"%m%d"`
 
 
 if [[ $# -lt 1 ]]; then
-    echo "Usage: $0 emeas|emean|mee"
+    echo "Usage: $0 emeas|emean|mee..."
     exit 1
 fi
 
 create_dataset $1
+
+#
+# Create Regional Summary
+#
+echo ""
+scripts/create_summary_region.sh $1 $TS rep_pipeline "Pipeline Review"
+scripts/create_summary_region.sh $1 $TS rep_recoding_candidates "Recoding Candidates"
 
 
 #

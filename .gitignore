@@ -15,3 +15,7 @@ tmp/
 
 # Don't share "*ori*" style files
 *ori*
+
+# Don't share extracts
+extracts/
+extracts
