@@ -347,6 +347,13 @@ Finally, you open a command line, e.g. on your Desktop, and do this:
 You should then be able to open
 \[the web application\](http://localhost:8080/).
 
+Note: If the installation hangs for a long time, you may be behind
+a transparent proxy. In this case, see the top section of the file
+
+    install/bootstrap.sh
+
+to configure a proxy.
+
 To SSH into your virtual machine, you can just use
 
     vagrant ssh

@@ -20,7 +20,7 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder ".", "/var/www/"
   config.vm.synced_folder "install/src", "/var/src/"
 
-  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.box = "bento/ubuntu-18.04"
 
   config.vm.box_check_update = false
 
@@ -33,7 +33,7 @@ Vagrant.configure(2) do |config|
   config.ssh.password = 'vagrant'
 
   config.vm.provider :virtualbox do |vb|
-     vb.name = "dg"
+     vb.name = "csvdb"
      vb.customize ["modifyvm", :id, "--memory", "512"]
      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
