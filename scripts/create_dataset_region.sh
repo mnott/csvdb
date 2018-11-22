@@ -10,11 +10,11 @@ create_dataset() {
     #
     # Definitions
     #
-    DATASET1=cloud_consolidated_pipeline
+    DATASET1=global_cloud_all_status
     DATASET2=global_pipeline
     DATASET3=services
 
-    SOURCE11=data/$INPUT/$DATASET1/data/cloud_consolidated_pipeline_$REGION.csv
+    SOURCE11=data/$INPUT/$DATASET1/data/global_cloud_all_status_$REGION.csv
 
     SOURCE21=data/$INPUT/$DATASET2/data/global_pipeline_$REGION.csv
 
