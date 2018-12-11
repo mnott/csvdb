@@ -1,0 +1,51 @@
+#!/usr/bin/env perl 
+
+# Print out a list of open TCP ports, PID and Process Command Lines.
+# Pass an optional parameter for the length of the process command
+# line; -1 for no limit on the lenght.
+
+use strict;
+use warnings;
+
+use Proc::ProcessTable;
+
+my @ports;
+my %procs;
+my %pids;
+my $cmdlen = 100;
+
+if ($#ARGV+1 > 0) {
+  $cmdlen = $ARGV[0];
+}
+
+my $t = new Proc::ProcessTable;
+
+my $cmd = "netstat -tulpn";    
+my @output = `$cmd`;    
+chomp @output;
+
+foreach my $line (@output) {
+    if ($line =~ m/^tcp\s.*?:(.*?)\s.*?([\d]*?)\//) {
+        my $cmdline = "";
+        my $pid     = $2;
+        my $port    = $1;
+        PROCS:
+        foreach my $p ( @{$t->table}) {
+            if ($p->pid eq $pid) {
+                $cmdline = $p->cmndline || $p->fname;
+                last PROCS;
+            }
+        }
+        push @ports, $port;
+        $pids{$port}=$pid;
+        $procs{$port}=$cmdlen < 0 ? $cmdline : substr($cmdline, 0, $cmdlen);
+    }
+}
+
+foreach my $port (sort { $a <=> $b } @ports) {
+    printf("%6s \t %6s \t %s\n", $port, $pids{$port}, $procs{$port});
+}
+
+#netstat -tulpn|grep -v :: | grep tcp
+
+
