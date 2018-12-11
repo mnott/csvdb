@@ -21,8 +21,17 @@ if [ -f ../pod2markdown.pl ]; then
   sudo cp ../pod2markdown.pl /usr/local/bin/
 fi
 
-# Install a whole bunch of Perl packages
+# Install cpanm
 sudo curl -L https://cpanmin.us 2>/dev/null | perl - App::cpanminus
+
+# Install Ports Utility
+if [ -f ../ports ]; then
+  sudo cp ../ports /usr/local/bin
+  sudo chmod 755 /usr/local/bin/ports
+  sudo cpanm Proc::ProcessTable
+fi
+
+# Install a whole bunch of Perl packages
 sudo cpanm Data::Dump
 sudo cpanm Text::Table
 sudo cpanm Text::CSV
@@ -47,7 +56,6 @@ sudo cpanm JSON
 sudo cpanm File::Slurp
 sudo cpanm DateTime::Format::Strptime
 
-
 # Update to the current version of cvsdb to fix BOM error
 cd /tmp
 git clone https://github.com/perl5-dbi/DBD-CSV.git DBD-CSV
@@ -56,3 +64,5 @@ AUTOMATED_TESTING=1 perl Makefile.PL
 make install
 cd ..
 rm -fr DBD-CSV
+
+
