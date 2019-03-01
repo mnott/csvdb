@@ -10,6 +10,7 @@ docker pull mnott/csvdb
 docker-compose build
 docker-compose up -d
 docker-compose down
+docker-compose kill
 
 #
 # Manual Build (--squash requires experimental features)
