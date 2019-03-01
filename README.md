@@ -345,7 +345,7 @@ The last process will typically take about 5 - 10 minutes.
 You should then be able to open
 \[the web application\](http://localhost:8080/).
 
-## RUN WITHING A VIRTUAL MACHINE
+## RUN WITHIN A VIRTUAL MACHINE
 
 Alternatively, if you do not want to mess with your local
 installation, you can install the whole package as to run
