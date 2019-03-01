@@ -1,0 +1,86 @@
+FROM ubuntu:latest
+
+MAINTAINER Matthias Nott <matthias.nott@sap.com>
+
+#
+# Make sure Ubuntu is up-to-date
+#
+RUN echo DEBIAN_FRONTEND=noninteractive >>/etc/environment && \
+    dpkg-reconfigure debconf -f noninteractive -p critical && \
+    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+#
+# Install required packages
+#
+RUN apt-get update && \
+    apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade && \
+    apt-get -y install \
+      apache2 libapache2-mod-perl2 libapache2-request-perl \
+      perl-doc libxml2-dev libcache-memcached-perl \
+      curl \
+      git
+
+#
+# Configure Apache
+#
+COPY install/src/mod_perl.conf /etc/apache2/conf-available
+RUN a2enmod ssl && \
+    a2enmod rewrite  && \
+    a2enconf mod_perl  && \
+    rm -f /etc/apache2/sites-available/default-ssl.conf  && \
+    echo MaxConnectionsPerChild 3 >>/etc/apache2/apache2.conf  && \
+    echo ServerName localhost >>/etc/apache2/apache2.conf
+
+#
+# Configure Perl
+#
+COPY install/src/pod2markdown.pl /usr/local/bin
+
+
+# Install cpanm
+RUN curl -L https://cpanmin.us 2>/dev/null | perl - App::cpanminus
+
+# Install ports
+COPY install/src/ports /usr/local/bin
+RUN chmod 755 /usr/local/bin/ports && \
+    cpanm --notest Proc::ProcessTable
+
+# Install a whole bunch of Perl packages
+RUN cpanm --notest Data::Dump && \
+    cpanm --notest Text::Table && \
+    cpanm --notest Text::CSV && \
+    cpanm --notest Tie::IxHash && \
+    cpanm --notest DBI && \
+    cpanm --notest File::BOM && \
+    cpanm --notest DBD::CSV && \
+    cpanm --notest Pod::Markdown && \
+    cpanm --notest Config::Simple && \
+    cpanm --notest Moose && \
+    cpanm --notest Log::Log4perl && \
+    cpanm --notest namespace::autoclean && \
+    cpanm --notest XML::LibXML && \
+    cpanm --notest XML::LibXML::PrettyPrint && \
+    cpanm --notest MooseX::Log::Log4perl && \
+    cpanm --notest Log::Dispatch::Screen && \
+    cpanm --notest URL::Encode && \
+    cpanm --notest Apache::Session::File && \
+    cpanm --notest Cache::Memcached && \
+    cpanm --notest Digest::MD5 && \
+    cpanm --notest JSON && \
+    cpanm --notest File::Slurp && \
+    cpanm --notest DateTime::Locale && \
+    cpanm --notest DateTime::Format::Strptime
+
+
+# Update to the current version of cvsdb to fix BOM error
+RUN cd /tmp && \
+    git clone https://github.com/perl5-dbi/DBD-CSV.git DBD-CSV && \
+    cd DBD-CSV && AUTOMATED_TESTING=1 perl Makefile.PL && \
+    make install && \
+    cd .. && \
+    rm -fr DBD-CSV
+
+#
+# Start Apache
+#
+CMD apachectl -D FOREGROUND

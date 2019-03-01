@@ -394,6 +394,13 @@ Excel, Excel will interpret them as text.
 
 =head1 INSTALLATION
 
+There are three ways to run csvdb: First, you can run it natively
+on a Linux or MacOS system. Second, you can run it as a Docker
+image. Third, you can run it inside a virtual machine, e.g. using
+VirtualBox.
+
+=head2 RUN NATIVELY
+
 The program uses a number of perl modules. You can install
 those modules, if you are on a Linux or MacOS system, using
 the script B<install/src/configure/configure_perl.sh>. This
@@ -429,6 +436,53 @@ Here is a walkthrough of the installation under Ubuntu:
   a b
   3 4
 
+
+=head2 RUN AS A DOCKER IMAGE
+
+Running csvdb via Docker is very easy. You typically need
+to install only two things:
+
+1. Install [Git](https://git-scm.com/download)
+
+2. Install [Docker for Mac] (https://docs.docker.com/docker-for-mac/install/), or
+   Install [Docker for Win] (https://docs.docker.com/docker-for-windows/install/)
+
+Note: On Linux, use your distribution's preferred way to install
+docker. For the subsequend commands, also install docker-compose,
+which is, for example, a separate package on Ubuntu.
+
+Very important: If you are working on a Windows system, make sure
+to configure Git, when it installs, to *not automatically* convert
+Line Ends ("CR/LF"). Shouly you have configured it wrongly, you can
+do this on the command line:
+
+  git config --global core.autocrlf false
+
+Also, if you are using a proxy, you would want to set the proxy for git.
+For example:
+
+  git config --global http.proxy proxy.wdf.sap.corp:8080
+
+To remove a proxy configuration, you might do:
+
+  git config --unset --global http.proxy
+
+Then, before continuing, make sure that you have switched on
+Virtualization in your BIOS (the feature is often under either
+Configuration or Security, and is often called Intel Virtualization
+Technology and VT-d Feature: Enable both). If you fail to do this,
+the virtual machine will not start up, and also may be recognized
+wrongly as 32bit.
+
+Finally, you open a command line, e.g. on your Desktop, and do this:
+
+
+  git clone https://github.com/mnott/csvdb
+  cd csvdb
+  docker-compose up
+
+
+=head2 RUN WITHING A VIRTUAL MACHINE
 
 Alternatively, if you do not want to mess with your local
 installation, you can install the whole package as to run

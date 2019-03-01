@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  memcached:
+    build:
+      context: .
+      dockerfile: $PWD/docker/memcached
+    image: memcached
+    ports:
+      - "11211:11211"
+  csvdb:
+    build:
+      context: .
+      dockerfile: $PWD/docker/csvdb
+    image: csvdb
+    ports:
+      - "8080:80"
+    links:
+      - memcached
+    volumes:
+      - $PWD:/var/www

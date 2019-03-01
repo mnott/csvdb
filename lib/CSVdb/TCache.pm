@@ -57,7 +57,7 @@ sub BUILD {
     my ( $self, $arg_ref ) = @_;
 
     my $memd = new Cache::Memcached {
-        'servers'            => ['127.0.0.1:11211'],
+        'servers'            => ['127.0.0.1:11211', 'memcached:11211'],
         'compress_threshold' => 10_000,
     };
 
