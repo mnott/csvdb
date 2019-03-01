@@ -471,16 +471,18 @@ Then, before continuing, make sure that you have switched on
 Virtualization in your BIOS (the feature is often under either
 Configuration or Security, and is often called Intel Virtualization
 Technology and VT-d Feature: Enable both). If you fail to do this,
-the virtual machine will not start up, and also may be recognized
-wrongly as 32bit.
+the image may not start up.
 
 Finally, you open a command line, e.g. on your Desktop, and do this:
-
 
   git clone https://github.com/mnott/csvdb
   cd csvdb
   docker-compose up
 
+The last process will typically take about 5 - 10 minutes.
+
+You should then be able to open
+[the web application](http://localhost:8080/).
 
 =head2 RUN WITHING A VIRTUAL MACHINE
 
@@ -539,7 +541,7 @@ Finally, you open a command line, e.g. on your Desktop, and do this:
   cd csvdb
   vagrant up
 
-
+The last process will typically take about 5 - 10 minutes.
 
 You should then be able to open
 [the web application](http://localhost:8080/).
