@@ -1,62 +1,41 @@
 #
-# Build / Start via docker-compose:
+# Download from Docker Hub
+#
+docker pull mnott/memcached
+docker pull mnott/csvdb
+
+#
+# Build / Start / Stop via docker-compose:
 #
 docker-compose build
-docker-compose up
-
-#
-# Build
-#
-docker build -t csvdb/csvdb:0.1 -f docker/csvdb .
-docker build -t csvdb/memcached:0.1 -f docker/memcached .
-
-#
-# Build using docker-compose
-#
-docker-compose build
-
-#
-# Experimental: Build / Squash (will work with docker-compose latest tags)
-#
-docker build --squash -t csvdb:latest -f docker/csvdb .
-docker build --squash -t memcached:latest -f docker/memcached .
-
-
-#
-# Run
-#
-docker run --name memcached -itd -p 11211:11211 csvdb/memcached:0.1
-docker run --name csvdb -itd -p 8080:80 --link memcached -v $(pwd):/var/www csvdb/csvdb:0.1 /bin/bash
-
-#
-# Run using docker-compose
-#
 docker-compose up -d
-
-#
-# Stop
-#
-docker stop csvdb
-docker stop memcached
-
-#
-# Stop using docker-compose
-#
 docker-compose down
 
 #
-# Start
+# Manual Build (--squash requires experimental features)
 #
+docker build --squash -t mnott/csvdb -f docker/csvdb .
+docker build --squash -t mnott/memcached -f docker/memcached .
+docker rmi $(docker images -f "dangling=true" -q)
+
+#
+# Manual Run / Start / Stop / Kill
+#
+docker run --name memcached -itd -p 11211:11211 mnott/memcached
+docker run --name csvdb -itd -p 8080:80 --link memcached -v $(pwd):/var/www mnott/csvdb
 docker start memcached
 docker start csvdb
-docker exec -it csvdb /bin/bash
+docker stop memcached
+docker stop csvdb
+docker kill memcached
+docker kill csvdb
 
 #
 # Log into container
 #
+docker exec -it csvdb /bin/bash
 docker exec -it $(docker container ls --format '{{.Names}}'|grep _csvdb_) /bin/bash
 docker exec -it $(docker container ls --format '{{.Names}}'|grep _memcached_) /bin/bash
-
 
 #
 # Clean
@@ -64,5 +43,5 @@ docker exec -it $(docker container ls --format '{{.Names}}'|grep _memcached_) /b
 docker container prune
 docker image prune
 docker rmi $(docker images -f "dangling=true" -q)
-
+docker system prune -a --volumes
 

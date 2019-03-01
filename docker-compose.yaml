@@ -5,14 +5,14 @@ services:
     build:
       context: .
       dockerfile: $PWD/docker/memcached
-    image: memcached
+    image: mnott/memcached
     ports:
       - "11211:11211"
   csvdb:
     build:
       context: .
       dockerfile: $PWD/docker/csvdb
-    image: csvdb
+    image: mnott/csvdb
     ports:
       - "8080:80"
     links:
