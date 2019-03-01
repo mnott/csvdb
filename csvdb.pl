@@ -448,7 +448,7 @@ to install only two things:
    Install [Docker for Win] (https://docs.docker.com/docker-for-windows/install/)
 
 Note: On Linux, use your distribution's preferred way to install
-docker. For the subsequend commands, also install docker-compose,
+docker. For the subsequent commands, also install docker-compose,
 which is, for example, a separate package on Ubuntu.
 
 Very important: If you are working on a Windows system, make sure
