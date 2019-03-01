@@ -56,6 +56,12 @@ sudo cpanm --notest JSON
 sudo cpanm --notest File::Slurp
 sudo cpanm --notest DateTime::Format::Strptime
 
+# Patch Memcached to avoid error on missing host memcached
+# that we introduced when creating the Docker images.
+# See here: https://rt.cpan.org/Public/Bug/Display.html?id=59594
+cd /usr/share/perl5/Cache
+patch Memcached.pm /vagrant/install/src/memcached.patch
+
 # Update to the current version of cvsdb to fix BOM error
 cd /tmp
 git clone https://github.com/perl5-dbi/DBD-CSV.git DBD-CSV

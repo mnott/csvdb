@@ -1,0 +1,36 @@
+diff --git a/lib/Cache/Memcached.pm b/lib/Cache/Memcached.pm
+index c1bf67b..fbb462c 100644
+--- a/lib/Cache/Memcached.pm
++++ b/lib/Cache/Memcached.pm
+@@ -261,10 +261,12 @@ sub sock_to_host { # (host)  #why is this public? I wouldn't have to worry about
+             } else {
+                 socket($sock, PF_INET, SOCK_STREAM, $proto);
+                 $sock_map{$sock} = $host;
+-                $sin = Socket::sockaddr_in($port, Socket::inet_aton($prefip));
++                my $aton_ip = Socket::inet_aton($prefip);
++                $sin = Socket::sockaddr_in($port, $aton_ip)
++                    if $aton_ip;
+             }
+ 
+-            if (_connect_sock($sock,$sin,$self->{connect_timeout})) {
++            if ($sin && _connect_sock($sock,$sin,$self->{connect_timeout})) {
+                 $connected = 1;
+             } else {
+                 if (my $cb = $self->{cb_connect_fail}) {
+@@ -285,11 +287,13 @@ sub sock_to_host { # (host)  #why is this public? I wouldn't have to worry about
+             } else {
+                 socket($sock, PF_INET, SOCK_STREAM, $proto);
+                 $sock_map{$sock} = $host;
+-                $sin = Socket::sockaddr_in($port, Socket::inet_aton($ip));
++                my $aton_ip = Socket::inet_aton($ip);
++                $sin = Socket::sockaddr_in($port, $aton_ip)
++                    if $aton_ip;
+             }
+ 
+             my $timeout = $self ? $self->{connect_timeout} : 0.25;
+-            unless (_connect_sock($sock, $sin, $timeout)) {
++            unless ($sin && _connect_sock($sock, $sin, $timeout)) {
+                 my $cb = $self ? $self->{cb_connect_fail} : undef;
+                 $cb->($ip) if $cb;
+                 return _dead_sock($self, $sock, undef, 20 + int(rand(10)));
+
