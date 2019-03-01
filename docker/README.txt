@@ -52,6 +52,13 @@ docker start csvdb
 docker exec -it csvdb /bin/bash
 
 #
+# Log into container
+#
+docker exec -it $(docker container ls --format '{{.Names}}'|grep _csvdb_) /bin/bash
+docker exec -it $(docker container ls --format '{{.Names}}'|grep _memcached_) /bin/bash
+
+
+#
 # Clean
 #
 docker container prune
