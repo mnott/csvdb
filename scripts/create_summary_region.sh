@@ -28,3 +28,12 @@ fi
 
 create_dataset "$1" "$2" "$3" "$4"
 
+
+export REGIONUC=$(echo $REGION| awk '{print toupper($0)}')
+
+#
+# MEE MUs
+#
+if [[ $REGIONUC == MEE ]]; then
+    for i in Switzerland; do scripts/create_summary_mu.sh "$REGIONUC" "$i" "$2" "$3" "$4"; done
+fi
